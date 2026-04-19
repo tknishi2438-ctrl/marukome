@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マルコメ杯 POG</title>
+</head>
+<body>
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyCxtkpZ-jVcjk7713SwvfGLn6XN5OE81Hs",
+    authDomain: "marukome-cup.firebaseapp.com",
+    projectId: "marukome-cup",
+    storageBucket: "marukome-cup.firebasestorage.app",
+    messagingSenderId: "871741299483",
+    appId: "1:871741299483:web:91eb8cbbc7f30cd67251be"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const POG_REF = db.collection('g1app').doc('pog_data');
+</script>
+
+<style>
+/* ===== Base ===== */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;background:#f0f4f0;color:#222;min-height:100vh;}
+
+/* ===== Header ===== */
+.header{padding:14px 16px 10px;border-bottom:none;margin-bottom:0;background:#006633;text-align:center;}
+.title{font-size:1.2rem;font-weight:900;color:#fff;line-height:1.4;}
+.meta-row{display:flex;gap:12px;margin-top:6px;flex-wrap:wrap;justify-content:center;}
+.meta{font-size:0.75rem;color:rgba(255,255,255,0.75);}
+.save-badge{display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;padding:2px 8px;background:rgba(255,255,255,0.2);color:#fff;border-radius:20px;}
+
+/* ===== Tabs ===== */
+.tabs{display:flex;gap:0;margin-bottom:0;flex-wrap:wrap;background:#fff;border-bottom:3px solid #006633;position:sticky;top:0;z-index:10;box-shadow:0 2px 4px rgba(0,0,0,0.08);justify-content:center;}
+.tab{padding:10px 12px;border:none;border-bottom:3px solid transparent;margin-bottom:-3px;font-size:0.82rem;cursor:pointer;color:#666;background:transparent;transition:all 0.2s;}
+.tab.active{color:#006633;border-bottom-color:#006633;font-weight:bold;}
+.tab:hover{color:#006633;background:#f0f8f4;}
+
+/* ===== Sections ===== */
+.sec{display:none;padding:16px;max-width:700px;margin:0 auto;}.sec.active{display:block;}
+
+/* ===== Cards ===== */
+.card{background:#fff;border-radius:8px;padding:16px;margin-bottom:16px;border:1px solid #d4e8d4;box-shadow:0 1px 4px rgba(0,102,51,0.07);}
+.card-title{font-size:0.95rem;font-weight:700;color:#006633;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #e8f5ee;}
+.card-sub{font-size:0.8rem;color:#666;margin-bottom:10px;}
+
+/* ===== Forms ===== */
+label{font-size:0.78rem;color:#555;display:block;margin-bottom:3px;margin-top:10px;}
+label:first-child{margin-top:0;}
+input,select{width:100%;background:#fff;border:1px solid #ccc;color:#222;padding:8px 10px;font-size:0.9rem;font-family:inherit;border-radius:6px;}
+input:focus,select:focus{outline:none;border-color:#006633;box-shadow:0 0 0 2px rgba(0,102,51,0.15);}
+select option{background:#fff;}
+textarea{width:100%;resize:vertical;border:1px solid #ccc;border-radius:6px;padding:8px;font-size:0.85rem;font-family:monospace;background:#fff;color:#222;}
+
+/* ===== Grid helpers ===== */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.g3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+
+/* ===== Buttons ===== */
+.btn{padding:8px 16px;border:1px solid #ccc;border-radius:6px;font-size:0.88rem;cursor:pointer;background:#fff;color:#333;font-family:inherit;transition:all 0.2s;}
+.btn:hover{background:#f5f5f5;}
+.btn-p{background:#006633;color:#fff;border-color:#006633;}
+.btn-p:hover{background:#005229;}
+.btn-d{background:transparent;color:#c0392b;border-color:#c0392b;font-size:14px;padding:2px 8px;line-height:1;}
+.btn-d:hover{background:#fff5f5;}
+
+/* ===== Metrics ===== */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1rem;}
+.metric{background:#f0f8f4;border:1px solid #d4e8d4;border-radius:8px;padding:10px 12px;}
+.metric-l{font-size:0.72rem;color:#666;margin-bottom:4px;}
+.metric-v{font-size:1.4rem;font-weight:bold;color:#006633;}
+
+/* ===== Badges ===== */
+.badge{font-size:11px;padding:2px 7px;font-weight:500;display:inline-block;white-space:nowrap;border-radius:4px;}
+.b-gold{background:#fff3e0;color:#e65100;}
+.b-silver{background:#f5f5f5;color:#616161;}
+.b-bronze{background:#fbe9e7;color:#bf360c;}
+.b-ok{background:#e8f5e9;color:#2e7d32;}
+.b-warn{background:#fff8e1;color:#f57f17;}
+.b-info{background:#e3f2fd;color:#1565c0;}
+
+/* ===== Row items ===== */
+.row-item{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid #eee;font-size:14px;color:#222;}
+.row-item:last-child{border-bottom:none;}
+.rank-n{width:22px;text-align:center;font-size:12px;color:#888;font-weight:500;}
+.pts{margin-left:auto;font-weight:bold;color:#006633;}
+
+/* ===== Tables ===== */
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:7px 8px;font-size:11px;font-weight:600;color:#006633;border-bottom:2px solid #d4e8d4;background:#f0f8f4;}
+td{padding:8px;border-bottom:1px solid #eee;vertical-align:middle;color:#222;}
+tr:last-child td{border-bottom:none;}
+.horse-table{width:100%;border-collapse:collapse;border:1px solid #d4e8d4;border-radius:6px;overflow:hidden;font-size:13px;}
+.horse-table th{text-align:left;background:#f0f8f4;border-bottom:1px solid #d4e8d4;border-right:1px solid #e8f5ee;padding:8px 10px;font-size:12px;font-weight:600;color:#006633;}
+.horse-table th:last-child{border-right:none;}
+.horse-table td{border-bottom:1px solid #eee;border-right:1px solid #f0f0f0;padding:8px 10px;vertical-align:middle;color:#222;}
+.horse-table td:last-child{border-right:none;}
+.horse-table tr:last-child td{border-bottom:none;}
+.horse-table tbody tr:hover td{background:#f9fdf9;}
+
+/* ===== Misc ===== */
+.chk-row{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:13px;}
+.chk-row input[type=checkbox]{width:auto;accent-color:#006633;}
+.sp-box{padding:10px;background:#f9fdf9;border:1px solid #d4e8d4;border-radius:6px;margin-top:10px;}
+.sp-label{font-size:12px;font-weight:500;color:#555;margin-bottom:6px;}
+.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.alert-ok{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:6px;padding:8px 12px;font-size:13px;margin-bottom:10px;}
+.alert-err{background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:6px;padding:8px 12px;font-size:13px;margin-bottom:10px;}
+.empty{color:#999;font-size:13px;text-align:center;padding:2rem;}
+.pt-inp{width:55px;text-align:center;}
+.jra-box{background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;}
+.jra-box-title{font-size:13px;font-weight:600;color:#1565c0;margin-bottom:8px;}
+.jra-steps{font-size:12px;color:#1565c0;line-height:2;}
+.preview-box{background:#f9fdf9;border:1px solid #d4e8d4;border-radius:6px;padding:12px;margin-top:10px;font-size:13px;}
+.preview-row{display:flex;gap:8px;padding:3px 0;border-bottom:1px solid #eee;}
+.preview-row:last-child{border-bottom:none;}
+.preview-key{color:#888;min-width:80px;font-size:12px;}
+.preview-val{color:#222;font-weight:500;}
+.notion-box{background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;}
+.notion-box-title{font-size:13px;font-weight:500;color:#333;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+
+/* ===== Modals ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:12px;padding:24px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.18);}
+.modal-title{font-size:1rem;font-weight:700;color:#006633;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #e8f5ee;}
+.modal-footer{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
+.btn-edit{padding:4px 10px;border-radius:4px;border:1px solid #ccc;font-size:12px;cursor:pointer;background:#fff;color:#333;}
+.btn-edit:hover{background:#f5f5f5;}
+</style>
+
+<!-- レース結果編集モーダル -->
+<div class="modal-overlay" id="edit-race-modal" onclick="if(event.target===this)closeEditRaceModal()">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-title">レース結果を編集</div>
+    <input type="hidden" id="edit-race-id">
+    <div class="g2">
+      <div><label>レース名</label><input type="text" id="edit-race-name"></div>
+      <div><label>グレード</label>
+        <select id="edit-race-grade">
+          <option value="G1">G1</option>
+          <option value="G2">G2</option>
+          <option value="G3">G3</option>
+          <option value="OP">オープン／リステッド</option>
+          <option value="flat">平場（1〜3勝クラス）</option>
+          <option value="maiden">未勝利</option>
+          <option value="newface">新馬</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2" style="margin-top:8px;">
+      <div><label>レース日</label><input type="date" id="edit-race-date"></div>
+      <div><label>馬名</label><select id="edit-race-horse"></select></div>
+    </div>
+    <div class="g2" style="margin-top:8px;">
+      <div><label>着順</label>
+        <select id="edit-race-place">
+          <option value="1">1着</option><option value="2">2着</option><option value="3">3着</option>
+          <option value="4">4着</option><option value="5">5着</option><option value="6">6着</option>
+          <option value="7">7着</option><option value="8">8着</option><option value="9">9着以下</option>
+          <option value="last">最下位</option>
+        </select>
+      </div>
+      <div><label>区分</label>
+        <select id="edit-race-region">
+          <option value="JRA">JRA</option>
+          <option value="local">地方</option>
+          <option value="overseas">海外</option>
+        </select>
+      </div>
+    </div>
+    <div class="sp-box" style="margin-top:10px;">
+      <div class="sp-label">特別ポイント</div>
+      <div class="sp-grid">
+        <div class="chk-row"><input type="checkbox" id="edit-sp-record"><label style="margin:0;">レコード勝ち　+5pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="edit-sp-tansho"><label style="margin:0;">単勝万券　+10pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="edit-sp-umaren"><label style="margin:0;">馬連万券　+5pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="edit-sp-umatan"><label style="margin:0;">馬単万券　+5pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="edit-sp-derby"><label style="margin:0;">ダービー勝ち　+50pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="edit-sp-g1x2"><label style="margin:0;">G1・2勝目　+50pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="edit-sp-donziri" disabled><label style="margin:0;color:#9ca3af;">最下位（ドンジリ）　−3pt　<small>自動</small></label></div>
+        <div class="chk-row"><input type="checkbox" id="edit-sp-chu" disabled><label style="margin:0;color:#9ca3af;">抽せん馬勝利　+5pt　<small>自動</small></label></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeEditRaceModal()">キャンセル</button>
+      <button class="btn btn-p" onclick="saveEditRace()">保存する</button>
+    </div>
+  </div>
+</div>
+
+<!-- 参加者編集モーダル -->
+<div class="modal-overlay" id="edit-owner-modal" onclick="if(event.target===this)closeEditOwnerModal()">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-title">参加者情報を編集</div>
+    <input type="hidden" id="edit-owner-id">
+    <div style="margin-bottom:8px;"><label>参加者名</label><input type="text" id="edit-owner-name"></div>
+    <div><label>指名頭数</label><select id="edit-owner-count"></select></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeEditOwnerModal()">キャンセル</button>
+      <button class="btn btn-p" onclick="saveEditOwner()">保存する</button>
+    </div>
+  </div>
+</div>
+
+<!-- 馬情報編集モーダル -->
+<div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal">
+    <div class="modal-title">指名馬情報を編集</div>
+    <input type="hidden" id="edit-id">
+    <div class="g2">
+      <div><label>馬名</label><input type="text" id="edit-name"></div>
+      <div><label>指名者</label><select id="edit-owner"></select></div>
+    </div>
+    <div class="g4" style="margin-top:8px;">
+      <div><label>毛色</label>
+        <select id="edit-color">
+          <option>鹿毛</option><option>黒鹿毛</option><option>青鹿毛</option>
+          <option>栗毛</option><option>栃栗毛</option><option>青毛</option><option>芦毛</option><option>白毛</option>
+        </select>
+      </div>
+      <div><label>所属</label>
+        <select id="edit-stable"><option value="栗東">栗東</option><option value="美浦">美浦</option></select>
+      </div>
+      <div><label>厩舎名</label><input type="text" id="edit-trainer"></div>
+      <div><div class="chk-row" style="margin-top:20px;"><input type="checkbox" id="edit-chu"><label style="margin:0;font-size:13px;">抽せん馬</label></div></div>
+    </div>
+    <div class="g3" style="margin-top:8px;">
+      <div><label>父名</label><input type="text" id="edit-sire"></div>
+      <div><label>母名</label><input type="text" id="edit-dam"></div>
+      <div><label>母の父名</label><input type="text" id="edit-bms"></div>
+    </div>
+    <div class="g2" style="margin-top:8px;">
+      <div><label>馬主</label><input type="text" id="edit-owner2"></div>
+      <div><label>生産者</label><input type="text" id="edit-breeder"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeEditModal()">キャンセル</button>
+      <button class="btn btn-p" onclick="saveEditHorse()">保存する</button>
+    </div>
+  </div>
+</div>
+
+<div class="header">
+  <div class="title" id="pog-title">第31回 マルコメ杯POG</div>
+  <div class="meta-row">
+    <span class="meta" id="meta-period">集計期間：未設定</span>
+    <span class="meta">対象：全レース（JRA・地方・海外）</span>
+    <span class="meta" id="meta-updated"></span>
+    <span class="save-badge" id="save-badge" style="display:none;">✓ 保存済み</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="sw('ranking',this)">ランキング</button>
+  <button class="tab" onclick="sw('race',this)">レース入力</button>
+  <button class="tab" onclick="sw('horses',this)">指名馬登録</button>
+  <button class="tab" onclick="sw('owners',this)">参加者設定</button>
+  <button class="tab" onclick="sw('settings',this)">大会設定</button>
+  <button class="tab" onclick="sw('datamanage',this)">データ管理</button>
+</div>
+
+<div id="ranking" class="sec active">
+  <div class="metrics" id="metrics"></div>
+  <div class="card"><div class="card-title">指名者別ランキング</div><div id="owner-rank"></div></div>
+  <div class="card"><div class="card-title">馬別獲得ポイント</div><div id="horse-rank"></div></div>
+</div>
+
+<div id="race" class="sec">
+  <div class="card">
+    <div class="card-title">レース結果を入力</div>
+    <div id="race-alert"></div>
+    <div class="g3">
+      <div><label>レース名</label><input type="text" id="r-name" placeholder="例：皐月賞"></div>
+      <div><label>グレード</label>
+        <select id="r-grade">
+          <option value="G1">G1</option>
+          <option value="G2">G2</option>
+          <option value="G3">G3</option>
+          <option value="OP">オープン／リステッド</option>
+          <option value="flat" selected>平場（1〜3勝クラス）</option>
+          <option value="maiden">未勝利</option>
+          <option value="newface">新馬</option>
+        </select>
+      </div>
+      <div><label>レース日</label><input type="date" id="r-date"></div>
+    </div>
+    <div class="g3" style="margin-top:10px;">
+      <div><label>馬名</label><select id="r-horse"><option value="">-- 馬を選択 --</option></select></div>
+      <div><label>着順</label>
+        <select id="r-place">
+          <option value="1">1着</option><option value="2">2着</option><option value="3">3着</option>
+          <option value="4">4着</option><option value="5">5着</option><option value="6">6着</option>
+          <option value="7">7着</option><option value="8">8着</option><option value="9">9着以下</option>
+          <option value="last">最下位（ドンジリ）</option>
+        </select>
+      </div>
+      <div><label>開催区分</label>
+        <select id="r-region">
+          <option value="JRA">JRA（中央）</option>
+          <option value="local">地方競馬</option>
+          <option value="overseas">海外</option>
+        </select>
+      </div>
+    </div>
+    <div class="sp-box">
+      <div class="sp-label">特別ポイント（該当する場合にチェック）</div>
+      <div class="sp-grid">
+        <div class="chk-row"><input type="checkbox" id="sp-record"><label style="margin:0;">レコード勝ち　+5pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="sp-tansho"><label style="margin:0;">単勝万券　+10pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="sp-umaren"><label style="margin:0;">馬連万券　+5pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="sp-umatan"><label style="margin:0;">馬単万券　+5pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="sp-derby"><label style="margin:0;">ダービー勝ち　+50pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="sp-g1x2"><label style="margin:0;">G1・2勝目　+50pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="sp-donziri" disabled><label style="margin:0;color:#9ca3af;">最下位（ドンジリ）　−3pt　<small>自動</small></label></div>
+        <div class="chk-row"><input type="checkbox" id="sp-chu" disabled><label style="margin:0;color:#9ca3af;">抽せん馬勝利　+5pt　<small>自動</small></label></div>
+      </div>
+    </div>
+    <div style="margin-top:12px;"><button class="btn btn-p" onclick="addRace()">登録する</button></div>
+  </div>
+  <div class="card"><div class="card-title">登録済みレース結果</div><div id="race-hist"></div></div>
+</div>
+
+<div id="horses" class="sec">
+  <div class="jra-box">
+    <div class="jra-box-title">JRAページから自動入力する方法</div>
+    <div class="jra-steps">
+      ① JRAのサイトで馬の情報ページを開く<br>
+      ② そのURLをClaudeに「このページを読み取って登録して」と伝える<br>
+      ③ Claudeが馬名・血統・厩舎などを自動で入力してくれます
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">手動で登録 / JRAから読み取り後に確認・修正</div>
+    <div id="h-alert"></div>
+    <div class="g2">
+      <div><label>馬名</label><input type="text" id="h-name" placeholder="例：ベレシート"></div>
+      <div><label>指名者</label><select id="h-owner"><option value="">-- 指名者を選択 --</option></select></div>
+    </div>
+    <div class="g4" style="margin-top:8px;">
+      <div><label>毛色</label>
+        <select id="h-color">
+          <option>鹿毛</option><option>黒鹿毛</option><option>青鹿毛</option>
+          <option>栗毛</option><option>栃栗毛</option><option>青毛</option><option>芦毛</option><option>白毛</option>
+        </select>
+      </div>
+      <div><label>所属</label>
+        <select id="h-stable"><option value="栗東">栗東</option><option value="美浦">美浦</option></select>
+      </div>
+      <div><label>厩舎名</label><input type="text" id="h-trainer" placeholder="例：斉藤崇史"></div>
+      <div><div class="chk-row" style="margin-top:20px;"><input type="checkbox" id="h-chu"><label style="margin:0;font-size:13px;">抽せん馬</label></div></div>
+    </div>
+    <div class="g3" style="margin-top:8px;">
+      <div><label>父名</label><input type="text" id="h-sire" placeholder="例：エピファネイア"></div>
+      <div><label>母名</label><input type="text" id="h-dam" placeholder="例：クロノジェネシス"></div>
+      <div><label>母の父名</label><input type="text" id="h-bms" placeholder="例：バゴ"></div>
+    </div>
+    <div class="g2" style="margin-top:8px;">
+      <div><label>馬主</label><input type="text" id="h-owner2" placeholder="例：サンデーレーシング"></div>
+      <div><label>生産者</label><input type="text" id="h-breeder" placeholder="例：ノーザンファーム"></div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;">
+      <button class="btn btn-p" onclick="addHorse()">登録する</button>
+      <button class="btn" onclick="clearHorseForm()">クリア</button>
+    </div>
+  </div>
+  <div class="card"><div class="card-title">登録馬一覧</div><div id="horse-list"></div></div>
+</div>
+
+<div id="owners" class="sec">
+  <div class="card">
+    <div class="card-title">参加者を追加</div>
+    <div class="g2">
+      <div><label>参加者名</label><input type="text" id="ow-name" placeholder="例：田中"></div>
+      <div><label>指名頭数</label><select id="ow-count"></select></div>
+    </div>
+    <div style="margin-top:12px;"><button class="btn btn-p" onclick="addOwner()">追加する</button></div>
+  </div>
+  <div class="card"><div class="card-title">参加者一覧</div><div id="owner-list"></div></div>
+</div>
+
+<div id="settings" class="sec">
+  <div class="card">
+    <div class="card-title">大会基本設定</div>
+    <div class="g2">
+      <div><label>大会名</label><input type="text" id="s-name" value="マルコメ杯POG"></div>
+      <div><label>回数</label><select id="s-round"></select></div>
+    </div>
+    <div class="g2" style="margin-top:8px;">
+      <div><label>集計開始日</label><input type="date" id="s-start"></div>
+      <div><label>集計終了日</label><input type="date" id="s-end"></div>
+    </div>
+    <div style="margin-top:12px;"><button class="btn btn-p" onclick="saveSettings()">保存する</button></div>
+  </div>
+  <div class="card">
+    <div class="card-title">ポイント設定</div>
+    <div class="card-sub">リステッド競走はオープンとして集計されます</div>
+    <table>
+      <tr><th>種別</th><th>1着</th><th>2着</th><th>3着</th><th>4着</th><th>5着</th><th>6〜8着</th></tr>
+      <tr><td>新馬</td><td><input class="pt-inp" type="number" id="pt-newface-1" value="8" min="0"></td><td colspan="5" style="color:var(--color-text-tertiary);font-size:12px;">なし</td></tr>
+      <tr><td>未勝利</td><td><input class="pt-inp" type="number" id="pt-maiden-1" value="5" min="0"></td><td colspan="5" style="color:var(--color-text-tertiary);font-size:12px;">なし</td></tr>
+      <tr><td>平場（1〜3勝）</td><td><input class="pt-inp" type="number" id="pt-flat-1" value="10" min="0"></td><td colspan="5" style="color:var(--color-text-tertiary);font-size:12px;">なし</td></tr>
+      <tr><td>オープン／リステッド</td><td><input class="pt-inp" type="number" id="pt-OP-1" value="15" min="0"></td><td><input class="pt-inp" type="number" id="pt-OP-2" value="8" min="0"></td><td colspan="4" style="color:var(--color-text-tertiary);font-size:12px;">なし</td></tr>
+      <tr><td>GIII</td><td><input class="pt-inp" type="number" id="pt-G3-1" value="20" min="0"></td><td><input class="pt-inp" type="number" id="pt-G3-2" value="15" min="0"></td><td><input class="pt-inp" type="number" id="pt-G3-3" value="10" min="0"></td><td colspan="3" style="color:var(--color-text-tertiary);font-size:12px;">なし</td></tr>
+      <tr><td>GII</td><td><input class="pt-inp" type="number" id="pt-G2-1" value="30" min="0"></td><td><input class="pt-inp" type="number" id="pt-G2-2" value="20" min="0"></td><td><input class="pt-inp" type="number" id="pt-G2-3" value="15" min="0"></td><td colspan="3" style="color:var(--color-text-tertiary);font-size:12px;">なし</td></tr>
+      <tr><td>GI</td><td><input class="pt-inp" type="number" id="pt-G1-1" value="50" min="0"></td><td><input class="pt-inp" type="number" id="pt-G1-2" value="30" min="0"></td><td><input class="pt-inp" type="number" id="pt-G1-3" value="20" min="0"></td><td><input class="pt-inp" type="number" id="pt-G1-4" value="15" min="0"></td><td><input class="pt-inp" type="number" id="pt-G1-5" value="10" min="0"></td><td><input class="pt-inp" type="number" id="pt-G1-6" value="5" min="0"></td></tr>
+    </table>
+  </div>
+</div>
+
+<div id="datamanage" class="sec">
+  <div class="notion-box">
+    <div class="notion-box-title">📋 Notionへの同期方法</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8;">
+      ① 下の「JSONをコピー」ボタンをクリック<br>
+      ② ClaudeのチャットにJSONを貼り付けて「このデータをNotionに同期して」と送信<br>
+      ③ Claude（Notion MCP接続済み）が自動でNotionのデータベースを更新します
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">データのエクスポート</div>
+    <div class="card-sub">現在のデータをJSON形式でコピーし、バックアップやNotion同期に使用できます</div>
+    <div id="export-alert"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-p" onclick="exportJSON()">📋 JSONをコピー</button>
+      <button class="btn" onclick="showJSON()">JSONを表示</button>
+    </div>
+    <div id="json-display" style="display:none;margin-top:10px;">
+      <textarea id="json-text" style="height:150px;" readonly></textarea>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">データのインポート</div>
+    <div class="card-sub">別のデバイスやバックアップからデータを読み込む（現在のデータは上書きされます）</div>
+    <div id="import-alert"></div>
+    <textarea id="import-text" style="height:120px;margin-top:8px;" placeholder="JSONデータを貼り付けてください"></textarea>
+    <div style="margin-top:8px;">
+      <button class="btn btn-p" onclick="importJSON()">インポートする</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">データのリセット</div>
+    <div class="card-sub">すべてのデータを削除して初期状態に戻します。この操作は元に戻せません。</div>
+    <div style="margin-top:8px;">
+      <button class="btn" style="color:#A32D2D;border-color:#F09595;" onclick="resetData()">データをリセット</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// デフォルトデータ（初回起動時に使用）
+const DEFAULT_DATA = {
+  name:'マルコメ杯POG',
+  round:31,
+  start:'',
+  end:'',
+  owners:[
+    {id:1,name:'西澤',count:15},
+    {id:2,name:'髙坂',count:15},
+    {id:3,name:'小出',count:15}
+  ],
+  horses:[
+    {id:1, name:'ベレシート',        ownerId:1, color:'黒鹿毛', stable:'栗東', trainer:'斉藤崇史', sire:'エピファネイア', dam:'クロノジェネシス', bms:'バゴ', owner2:'(有)サンデーレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023106983/8E'},
+    {id:2, name:'フィロステファニ',   ownerId:1, color:'黒鹿毛', stable:'栗東', trainer:'中内田充',  sire:'エピファネイア', dam:'スキア', bms:'Motivator', owner2:'(株)社台レースホース', breeder:'社台ファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023103444/FF'},
+    {id:3, name:'バルセシート',       ownerId:1, color:'鹿毛', stable:'栗東', trainer:'松下武士',  sire:'キズナ', dam:'マラコスタムブラダ', bms:'Lizard Island', owner2:'(有)キャロットファーム', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023107241/00'},
+    {id:4, name:'ガローファノ',       ownerId:1, color:'鹿毛', stable:'美浦', trainer:'黒岩陽一',  sire:'キタサンブラック', dam:'チェリーコレクト', bms:'Oratorio', owner2:'吉田勝己', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023107107/41'},
+    {id:5, name:'コニーアイランド',   ownerId:1, color:'青毛', stable:'栗東', trainer:'中内田充',  sire:'コントレイル', dam:'ヤンキーローズ', bms:'All American', owner2:'(有)サンデーレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023107283/26'},
+    {id:6, name:'チャリングクロス',   ownerId:1, color:'青鹿毛', stable:'美浦', trainer:'奥村武',    sire:'キタサンブラック', dam:'ライジングクロス', bms:'Cape Cross', owner2:'(有)サンデーレーシング', breeder:'坂東牧場', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023107389/09'},
+    {id:7, name:'サガルマータ',       ownerId:1, color:'青鹿毛', stable:'栗東', trainer:'福永祐一',  sire:'コントレイル', dam:'コンヴィクションII', bms:'City Banker', owner2:'前田幸治', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023105286/A1'},
+    {id:8, name:'グランマエストロ',   ownerId:1, color:'栗毛', stable:'美浦', trainer:'木村哲也',  sire:'エピファネイア', dam:'グランアレグリア', bms:'ディープインパクト', owner2:'(有)サンデーレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023106986/E7'},
+    {id:9, name:'ヘイジュード',       ownerId:1, color:'鹿毛', stable:'美浦', trainer:'堀宣行',    sire:'キタサンブラック', dam:'キラーグレイシス', bms:'Congaree', owner2:'エムズレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023105280/EF'},
+    {id:10,name:'ハムタン',           ownerId:1, color:'鹿毛', stable:'栗東', trainer:'武幸四郎',  sire:'エピファネイア', dam:'カレンブーケドール', bms:'ディープインパクト', owner2:'TNレーシング', breeder:'社台ファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023103373/8B'},
+    {id:11,name:'サトノトリニティ',   ownerId:1, color:'鹿毛', stable:'栗東', trainer:'池江泰寿',  sire:'サトノダイヤモンド', dam:'メチャコルタ', bms:'El Corredor', owner2:'里見治', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023107272/A3'},
+    {id:12,name:'イエッサー',         ownerId:1, color:'鹿毛', stable:'栗東', trainer:'武幸四郎',  sire:'エピファネイア', dam:'イーヴンソー', bms:'Camelot', owner2:'藤田晋', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023106881/77'},
+    {id:13,name:'ダイヤモンドパレス', ownerId:1, color:'鹿毛', stable:'美浦', trainer:'手塚貴久',  sire:'サトノダイヤモンド', dam:'パレスルーマー', bms:'Royal Anthem', owner2:'(有)サンデーレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023107160/7C'},
+    {id:14,name:'マジックパレス',     ownerId:1, color:'鹿毛', stable:'美浦', trainer:'木村哲也',  sire:'サートゥルナーリア', dam:'フローレスマジック', bms:'ディープインパクト', owner2:'(有)サンデーレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023107189/A7'},
+    {id:15,name:'トラコ',             ownerId:1, color:'黒鹿毛', stable:'栗東', trainer:'中内田充',  sire:'コントレイル', dam:'シーズアタイガー', bms:'Tale of the Cat', owner2:'藤田晋', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023105296/B1'},
+    {id:16,name:'アランカール',       ownerId:2, color:'鹿毛', stable:'栗東', trainer:'斉藤崇史',  sire:'エピファネイア', dam:'シンハライト', bms:'ディープインパクト', owner2:'(有)キャロットファーム', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023107046/DD'},
+    {id:17,name:'ラディアントスター', ownerId:2, color:'青鹿毛', stable:'美浦', trainer:'林徹',      sire:'サトノアラジン', dam:'ミスエリカ', bms:'Blame', owner2:'保坂和孝', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023107250/84'},
+    {id:18,name:'イクシード',         ownerId:2, color:'黒鹿毛', stable:'美浦', trainer:'木村哲也',  sire:'キタサンブラック', dam:'シャトーブランシュ', bms:'キングヘイロー', owner2:'(有)シルクレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023107030/1B'},
+    {id:19,name:'サレジオ',           ownerId:2, color:'栗毛', stable:'美浦', trainer:'田中博康',  sire:'エピファネイア', dam:'サラキア', bms:'ディープインパクト', owner2:'(有)シルクレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023107014/AE'},
+    {id:20,name:'マルガ',             ownerId:2, color:'白毛', stable:'栗東', trainer:'須貝尚介',  sire:'モーリス', dam:'ブチコ', bms:'キングカメハメハ', owner2:'金子真人ホールディングス(株)', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023107191/06'},
+    {id:21,name:'ダーリングハースト', ownerId:2, color:'栗毛', stable:'美浦', trainer:'宮田敬介',  sire:'エピファネイア', dam:'フォエヴァーダーリング', bms:'Congrats', owner2:'(有)サンデーレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023107179/7E'},
+    {id:22,name:'プロメサアルムンド', ownerId:2, color:'栗毛', stable:'美浦', trainer:'田中博康',  sire:'モーリス', dam:'アーモンドアイ', bms:'ロードカナロア', owner2:'(有)シルクレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023106864/97'},
+    {id:23,name:'パラディオン',       ownerId:2, color:'栗毛', stable:'栗東', trainer:'高柳大輔',  sire:'レイデオロ', dam:'ステラリード', bms:'スペシャルウィーク', owner2:'広尾レース(株)', breeder:'木村秀則', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023106392/05'},
+    {id:24,name:'ガードオブオナー',   ownerId:2, color:'鹿毛', stable:'美浦', trainer:'林徹',      sire:'サトノダイヤモンド', dam:'ルミナスパレード', bms:'シンボリクリスエス', owner2:'(有)サンデーレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023107327/AA'},
+    {id:25,name:'ペルウィクトール',   ownerId:2, color:'青鹿毛', stable:'美浦', trainer:'宮田敬介',  sire:'サートゥルナーリア', dam:'ウィクトーリア', bms:'ヴィクトワールピサ', owner2:'(有)シルクレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023106886/9D'},
+    {id:26,name:'サンダーバード',     ownerId:2, color:'青鹿毛', stable:'栗東', trainer:'武幸四郎',  sire:'エピファネイア', dam:'サロニカ', bms:'ディープインパクト', owner2:'藤田晋', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023105292/E5'},
+    {id:27,name:'アスクブームキセキ', ownerId:2, color:'青鹿毛', stable:'栗東', trainer:'藤原英昭',  sire:'コントレイル', dam:'ストレイトガール', bms:'フジキセキ', owner2:'廣崎利洋HD(株)', breeder:'(株)ASK STUD', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023100472/7C'},
+    {id:28,name:'レイジングサージ',   ownerId:2, color:'', stable:'美浦', trainer:'田中博康',  sire:'サートゥルナーリア', dam:'ラドラーダ', bms:'シンボリクリスエス', owner2:'', breeder:'', chu:false, jraUrl:''},
+    {id:29,name:'シーガルワールド',   ownerId:2, color:'鹿毛', stable:'美浦', trainer:'栗田徹',    sire:'ベンバトル', dam:'メーヴェ', bms:'Motivator', owner2:'山田弘', breeder:'岡田スタツド', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023102424/F0'},
+    {id:30,name:'シェリデュース',     ownerId:2, color:'黒鹿毛', stable:'栗東', trainer:'友道康夫',  sire:'シルバーステート', dam:'ダストアンドダイヤモンズ', bms:'Vindication', owner2:'(株)インゼルレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023107098/13'},
+    {id:31,name:'アウダーシア',       ownerId:3, color:'黒鹿毛', stable:'美浦', trainer:'手塚貴久',  sire:'キズナ', dam:'リリーノーブル', bms:'ルーラーシップ', owner2:'(有)サンデーレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023107321/F8'},
+    {id:32,name:'ブラックオリンピア', ownerId:3, color:'青鹿毛', stable:'栗東', trainer:'友道康夫',  sire:'キタサンブラック', dam:'ピノ', bms:'Pierro', owner2:'(有)サンデーレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023107168/14'},
+    {id:33,name:'ダークマルス',       ownerId:3, color:'黒鹿毛', stable:'栗東', trainer:'杉山晴紀',  sire:'エピファネイア', dam:'ジェニサ', bms:'Storm Cat', owner2:'草間庸文', breeder:'下河辺牧場', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023100933/8B'},
+    {id:34,name:'アメリカンコール',   ownerId:3, color:'栗毛', stable:'栗東', trainer:'武幸四郎',  sire:'American Pharoah', dam:'イヴニングコール', bms:'Tapit', owner2:'(有)サンデーレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023106867/F0'},
+    {id:35,name:'ミッキーマーメイド', ownerId:3, color:'鹿毛', stable:'栗東', trainer:'福永祐一',  sire:'エピファネイア', dam:'エンタイスド', bms:'Galileo', owner2:'野田みづき', breeder:'三嶋牧場', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023105002/DA'},
+    {id:36,name:'ペイジャー',         ownerId:3, color:'鹿毛', stable:'栗東', trainer:'福永祐一',  sire:'エピファネイア', dam:'ピクシーホロウ', bms:'キングヘイロー', owner2:'藤田晋', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023105321/1A'},
+    {id:37,name:'サリエンテ',         ownerId:3, color:'青鹿毛', stable:'栗東', trainer:'池添学',    sire:'キズナ', dam:'サロミナ', bms:'Lomitas', owner2:'(有)シルクレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023107016/94'},
+    {id:38,name:'クランズクラウン',   ownerId:3, color:'鹿毛', stable:'栗東', trainer:'杉山晴紀',  sire:'アドマイヤマーズ', dam:'ブルークランズ', bms:'ルーラーシップ', owner2:'吉田勝己', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023107197/B8'},
+    {id:39,name:'チェルヴァーラ',     ownerId:3, color:'栗毛', stable:'栗東', trainer:'松下武士',  sire:'エピファネイア', dam:'チェッキーノ', bms:'キングカメハメハ', owner2:'(有)サンデーレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023107106/B5'},
+    {id:40,name:'ジャミールアイン',   ownerId:3, color:'鹿毛', stable:'栗東', trainer:'藤原英昭',  sire:'ドレフォン', dam:'ドバイマジェスティ', bms:'Essence of Dubai', owner2:'(有)サンデーレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023107139/3E'},
+    {id:41,name:'シェーネエルデ',     ownerId:3, color:'黒鹿毛', stable:'栗東', trainer:'安田翔伍',  sire:"St Mark's Basilica", dam:'スタセリタ', bms:'Monsun', owner2:'(株)社台レースホース', breeder:'Teruya Yoshida', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023110001/8A'},
+    {id:42,name:'アナザーフェイス',   ownerId:3, color:'黒鹿毛', stable:'美浦', trainer:'鹿戸雄一',  sire:'エピファネイア', dam:'マスクオフ', bms:'ディープインパクト', owner2:'(株)社台レースホース', breeder:'社台ファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023103558/F3'},
+    {id:43,name:'バックドラフト',     ownerId:3, color:'鹿毛', stable:'栗東', trainer:'友道康夫',  sire:'キタサンブラック', dam:'ファディラー', bms:'Monsun', owner2:'エムズレーシング', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud002023105323/19'},
+    {id:44,name:'ラヴズプレミアム',   ownerId:3, color:'鹿毛', stable:'栗東', trainer:'矢作芳人',  sire:'エピファネイア', dam:'ラヴズオンリーユー', bms:'ディープインパクト', owner2:'DMMドリームクラブ(株)', breeder:'ノーザンファーム', chu:false, jraUrl:'https://www.jra.go.jp/JRADB/accessU.html?CNAME=pw01dud102023107292/AA'},
+    {id:45,name:'カドーダムール',     ownerId:3, color:'', stable:'',    trainer:'',          sire:'エピファネイア', dam:'ラヴズオンリーミー', bms:'Storm Cat', owner2:'', breeder:'', chu:false, jraUrl:''}
+  ],
+  races:[],
+  nOId:4,
+  nHId:46,
+  nRId:1
+};
+
+// Firestore からデータを読み込む（初期値はDEFAULT_DATA）
+let S = JSON.parse(JSON.stringify(DEFAULT_DATA));
+
+// DEFAULT_DATA から血統情報（sire/dam/bms）を補完する（既存データへの自動マイグレーション）
+DEFAULT_DATA.horses.forEach(def => {
+  const h = S.horses.find(h => h.id === def.id);
+  if (h) {
+    if (!h.sire    && def.sire)    h.sire    = def.sire;
+    if (!h.dam     && def.dam)     h.dam     = def.dam;
+    if (!h.bms     && def.bms)     h.bms     = def.bms;
+    if (!h.color   && def.color)   h.color   = def.color;
+    if (!h.owner2  && def.owner2)  h.owner2  = def.owner2;
+    if (!h.breeder && def.breeder) h.breeder = def.breeder;
+    if (!h.jraUrl  && def.jraUrl)  h.jraUrl  = def.jraUrl;
+  }
+});
+
+// レース結果の自動追加（URLから取得したデータを初回のみ登録）
+(function seedRaces(){
+  const sp0 = {sp_record:false,sp_tansho:false,sp_umaren:false,sp_umatan:false,sp_derby:false,sp_g1x2:false,confirmed:false};
+  const seeds = [
+    // ベレシート（西澤）
+    {name:'2歳新馬',   grade:'newface', date:'2025-07-20', horseName:'ベレシート', place:'1',  region:'中央'},
+    {name:'エリカ賞',   grade:'flat',    date:'2025-12-13', horseName:'ベレシート', place:'2',  region:'中央'},
+    {name:'共同通信杯', grade:'G3',      date:'2026-02-15', horseName:'ベレシート', place:'2',  region:'中央'},
+    // フィロステファニ（西澤）
+    {name:'2歳新馬',     grade:'newface', date:'2025-07-27', horseName:'フィロステファニ', place:'1', region:'中央'},
+    {name:'アルテミスS', grade:'G3',      date:'2025-10-25', horseName:'フィロステファニ', place:'1', region:'中央'},
+    // バルセシート（西澤）
+    {name:'2歳新馬',                          grade:'newface', date:'2025-10-13', horseName:'バルセシート', place:'1', region:'中央'},
+    {name:'ラジオNIKKEI杯京都2歳ステークス', grade:'G3',      date:'2025-11-29', horseName:'バルセシート', place:'7', region:'中央'},
+    {name:'シンザン記念',                      grade:'G3',      date:'2026-01-12', horseName:'バルセシート', place:'4', region:'中央'},
+    {name:'3歳1勝クラス',                      grade:'flat',    date:'2026-03-15', horseName:'バルセシート', place:'2', region:'中央'},
+    {name:'チャーチルダウンズカップ',          grade:'OP',      date:'2026-04-04', horseName:'バルセシート', place:'3', region:'中央'},
+    // ガローファノ（西澤）
+    {name:'2歳新馬',     grade:'newface', date:'2025-08-31', horseName:'ガローファノ', place:'1', region:'中央'},
+    {name:'百日草特別',   grade:'flat',    date:'2025-11-02', horseName:'ガローファノ', place:'5', region:'中央'},
+    {name:'ゆりかもめ賞', grade:'flat',    date:'2026-02-10', horseName:'ガローファノ', place:'3', region:'中央'},
+    // コニーアイランド（西澤）
+    {name:'2歳新馬',        grade:'newface', date:'2025-08-02', horseName:'コニーアイランド', place:'1',  region:'中央'},
+    {name:'白菊賞',          grade:'flat',    date:'2025-11-30', horseName:'コニーアイランド', place:'4',  region:'中央'},
+    {name:'チューリップ賞', grade:'G3',      date:'2026-03-01', horseName:'コニーアイランド', place:'13', region:'中央'},
+    // チャリングクロス（西澤）
+    {name:'2歳新馬',      grade:'newface', date:'2025-06-21', horseName:'チャリングクロス', place:'9', region:'中央'},
+    {name:'2歳未勝利',    grade:'maiden',  date:'2025-10-12', horseName:'チャリングクロス', place:'1', region:'中央'},
+    {name:'3歳1勝クラス', grade:'flat',    date:'2026-01-05', horseName:'チャリングクロス', place:'3', region:'中央'},
+    {name:'フリージア賞',  grade:'flat',    date:'2026-02-21', horseName:'チャリングクロス', place:'5', region:'中央'},
+    // サガルマータ（西澤）
+    {name:'2歳新馬',   grade:'newface', date:'2025-12-13', horseName:'サガルマータ', place:'3', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-21', horseName:'サガルマータ', place:'1', region:'中央'},
+    // グランマエストロ（西澤）
+    {name:'2歳新馬',   grade:'newface', date:'2025-08-30', horseName:'グランマエストロ', place:'8', region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-02', horseName:'グランマエストロ', place:'3', region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-29', horseName:'グランマエストロ', place:'2', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-21', horseName:'グランマエストロ', place:'3', region:'中央'},
+    // ヘイジュード（西澤）
+    {name:'3歳新馬',   grade:'newface', date:'2026-02-07', horseName:'ヘイジュード', place:'3', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-21', horseName:'ヘイジュード', place:'4', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-03-15', horseName:'ヘイジュード', place:'2', region:'中央'},
+    // ハムタン（西澤）
+    {name:'2歳新馬',   grade:'newface', date:'2025-07-20', horseName:'ハムタン', place:'2', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-03-14', horseName:'ハムタン', place:'3', region:'中央'},
+    // サトノトリニティ（西澤）
+    {name:'2歳新馬',   grade:'newface', date:'2025-10-04', horseName:'サトノトリニティ', place:'7', region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-30', horseName:'サトノトリニティ', place:'4', region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-12-14', horseName:'サトノトリニティ', place:'4', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-21', horseName:'サトノトリニティ', place:'6', region:'中央'},
+    // イエッサー（西澤）
+    {name:'2歳新馬',   grade:'newface', date:'2025-09-27', horseName:'イエッサー', place:'11', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-03-14', horseName:'イエッサー', place:'13', region:'中央'},
+    // ダイヤモンドパレス（西澤）
+    {name:'3歳新馬',   grade:'newface', date:'2026-01-31', horseName:'ダイヤモンドパレス', place:'8', region:'中央'},
+    // マジックパレス・トラコ：未出走
+    // ===== 髙坂 =====
+    // アランカール（髙坂）
+    {name:'2歳新馬',      grade:'newface', date:'2025-07-05', horseName:'アランカール', place:'1', region:'中央'},
+    {name:'野路菊S',      grade:'OP',      date:'2025-09-20', horseName:'アランカール', place:'1', region:'中央'},
+    {name:'阪神JF',       grade:'G1',      date:'2025-12-14', horseName:'アランカール', place:'5', region:'中央'},
+    {name:'チューリップ賞', grade:'G3',    date:'2026-03-01', horseName:'アランカール', place:'3', region:'中央'},
+    // ラディアントスター（髙坂）
+    {name:'2歳新馬',      grade:'newface', date:'2025-07-06', horseName:'ラディアントスター', place:'2', region:'中央'},
+    {name:'2歳未勝利',    grade:'maiden',  date:'2025-07-19', horseName:'ラディアントスター', place:'2', region:'中央'},
+    {name:'2歳未勝利',    grade:'maiden',  date:'2025-11-09', horseName:'ラディアントスター', place:'1', region:'中央'},
+    {name:'若駒S',        grade:'OP',      date:'2026-01-24', horseName:'ラディアントスター', place:'4', region:'中央'},
+    {name:'3歳1勝クラス', grade:'flat',    date:'2026-03-22', horseName:'ラディアントスター', place:'1', region:'中央'},
+    // イクシード（髙坂）
+    {name:'2歳新馬',   grade:'newface', date:'2025-10-12', horseName:'イクシード', place:'1', region:'中央'},
+    {name:'フラワーC', grade:'G3',      date:'2026-03-21', horseName:'イクシード', place:'3', region:'中央'},
+    // サレジオ（髙坂）
+    {name:'2歳新馬',    grade:'newface', date:'2025-06-15', horseName:'サレジオ', place:'1', region:'中央'},
+    {name:'東スポ2歳S', grade:'G2',      date:'2025-11-24', horseName:'サレジオ', place:'6', region:'中央'},
+    {name:'ジュニアC',  grade:'flat',    date:'2026-01-04', horseName:'サレジオ', place:'2', region:'中央'},
+    // マルガ（髙坂）
+    {name:'2歳新馬',      grade:'newface', date:'2025-07-12', horseName:'マルガ', place:'1', region:'中央'},
+    {name:'アルテミスS',  grade:'G3',      date:'2025-10-25', horseName:'マルガ', place:'5', region:'中央'},
+    {name:'つわぶき賞',   grade:'flat',    date:'2025-12-13', horseName:'マルガ', place:'3', region:'中央'},
+    {name:'クイーンC',    grade:'G3',      date:'2026-02-14', horseName:'マルガ', place:'7', region:'中央'},
+    {name:'3歳1勝クラス', grade:'flat',    date:'2026-03-08', horseName:'マルガ', place:'7', region:'中央'},
+    // ダーリングハースト（髙坂）
+    {name:'2歳新馬',   grade:'newface', date:'2025-06-22', horseName:'ダーリングハースト', place:'3', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-14', horseName:'ダーリングハースト', place:'1', region:'中央'},
+    // プロメサアルムンド（髙坂）
+    {name:'2歳新馬',   grade:'newface', date:'2025-08-03', horseName:'プロメサアルムンド', place:'1', region:'中央'},
+    // パラディオン（髙坂）
+    {name:'2歳新馬',   grade:'newface', date:'2025-11-30', horseName:'パラディオン', place:'1',  region:'中央'},
+    {name:'京成杯',    grade:'G3',      date:'2026-01-18', horseName:'パラディオン', place:'14', region:'中央'},
+    // ガードオブオナー（髙坂）
+    {name:'2歳新馬',   grade:'newface', date:'2025-07-13', horseName:'ガードオブオナー', place:'5',  region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-10-04', horseName:'ガードオブオナー', place:'2',  region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-15', horseName:'ガードオブオナー', place:'6',  region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-01-12', horseName:'ガードオブオナー', place:'11', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-21', horseName:'ガードオブオナー', place:'2',  region:'中央'},
+    // ペルウィクトール（髙坂）
+    {name:'2歳新馬',   grade:'newface', date:'2025-07-27', horseName:'ペルウィクトール', place:'3', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-01-31', horseName:'ペルウィクトール', place:'2', region:'中央'},
+    // サンダーバード（髙坂）
+    {name:'2歳新馬',   grade:'newface', date:'2025-08-02', horseName:'サンダーバード', place:'3',  region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-10-13', horseName:'サンダーバード', place:'2',  region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-01-10', horseName:'サンダーバード', place:'16', region:'中央'},
+    // アスクブームキセキ（髙坂）
+    {name:'2歳新馬',   grade:'newface', date:'2025-12-07', horseName:'アスクブームキセキ', place:'5',  region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-12-20', horseName:'アスクブームキセキ', place:'5',  region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-21', horseName:'アスクブームキセキ', place:'14', region:'中央'},
+    // シーガルワールド・シェリデュース・レイジングサージ：未出走
+    // ===== 小出 =====
+    // アウダーシア（小出）
+    {name:'2歳新馬',   grade:'newface', date:'2025-06-08', horseName:'アウダーシア', place:'2', region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-30', horseName:'アウダーシア', place:'2', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-01', horseName:'アウダーシア', place:'1', region:'中央'},
+    {name:'スプリングS', grade:'G2',    date:'2026-03-15', horseName:'アウダーシア', place:'1', region:'中央'},
+    // ブラックオリンピア（小出）
+    {name:'2歳新馬',   grade:'newface', date:'2025-10-25', horseName:'ブラックオリンピア', place:'2',  region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-22', horseName:'ブラックオリンピア', place:'3',  region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-01-24', horseName:'ブラックオリンピア', place:'1',  region:'中央'},
+    {name:'アザレア賞', grade:'flat',   date:'2026-04-04', horseName:'ブラックオリンピア', place:'1',  region:'中央'},
+    // ダークマルス（小出）
+    {name:'2歳新馬',   grade:'newface', date:'2025-10-04', horseName:'ダークマルス', place:'1', region:'中央'},
+    {name:'黄菊賞',    grade:'flat',    date:'2025-11-16', horseName:'ダークマルス', place:'3', region:'中央'},
+    {name:'若駒S',     grade:'OP',      date:'2026-01-24', horseName:'ダークマルス', place:'9', region:'中央'},
+    // アメリカンコール（小出）
+    {name:'2歳新馬',      grade:'newface', date:'2025-12-27', horseName:'アメリカンコール', place:'1',  region:'中央'},
+    {name:'3歳1勝クラス', grade:'flat',    date:'2026-03-22', horseName:'アメリカンコール', place:'13', region:'中央'}, // 要確認
+    // ミッキーマーメイド（小出）
+    {name:'2歳新馬',         grade:'newface', date:'2025-07-12', horseName:'ミッキーマーメイド', place:'5', region:'中央'},
+    {name:'2歳未勝利',       grade:'maiden',  date:'2025-10-04', horseName:'ミッキーマーメイド', place:'1', region:'中央'},
+    {name:'セントポーリア賞', grade:'flat',   date:'2026-02-01', horseName:'ミッキーマーメイド', place:'5', region:'中央'},
+    // ペイジャー（小出）
+    {name:'3歳新馬',   grade:'newface', date:'2026-01-25', horseName:'ペイジャー', place:'1', region:'中央'},
+    // サリエンテ（小出）
+    {name:'2歳新馬',   grade:'newface', date:'2025-11-01', horseName:'サリエンテ', place:'2', region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-12-13', horseName:'サリエンテ', place:'3', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-01-11', horseName:'サリエンテ', place:'3', region:'中央'},
+    // クランズクラウン（小出）
+    {name:'2歳新馬',   grade:'newface', date:'2025-09-21', horseName:'クランズクラウン', place:'5', region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-15', horseName:'クランズクラウン', place:'6', region:'中央'},
+    {name:'3歳未勝利', grade:'maiden',  date:'2026-01-31', horseName:'クランズクラウン', place:'2', region:'中央'},
+    // チェルヴァーラ（小出）
+    {name:'2歳新馬',   grade:'newface', date:'2025-07-13', horseName:'チェルヴァーラ', place:'3', region:'中央'},
+    {name:'2歳未勝利', grade:'maiden',  date:'2025-08-30', horseName:'チェルヴァーラ', place:'3', region:'中央'},
+    // ジャミールアイン（小出）
+    {name:'2歳新馬',   grade:'newface', date:'2026-01-11', horseName:'ジャミールアイン', place:'5', region:'中央'},
+    // シェーネエルデ（小出）
+    {name:'2歳新馬',   grade:'newface', date:'2025-11-08', horseName:'シェーネエルデ', place:'7', region:'中央'},
+    // アナザーフェイス（小出）
+    {name:'3歳新馬',   grade:'newface', date:'2026-01-25', horseName:'アナザーフェイス', place:'18', region:'中央'}, // 要確認
+    // バックドラフト（小出）：未出走
+    // ラヴズプレミアム（小出）
+    {name:'2歳新馬',   grade:'newface', date:'2025-11-30', horseName:'ラヴズプレミアム', place:'12', region:'中央'}, // 要確認
+    // カドーダムール：JRA未登録
+  ];
+  seeds.forEach(seed => {
+    const horse = S.horses.find(h => h.name === seed.horseName);
+    if (!horse) return;
+    const horseId = horse.id;
+    if (S.races.some(r => r.horseId === horseId && r.date === seed.date && r.name === seed.name)) return;
+    S.races.push({id: S.nRId++, name: seed.name, grade: seed.grade, date: seed.date, horseId, place: seed.place, region: seed.region, ...sp0});
+  });
+})();
+
+function saveData(){
+  POG_REF.set(JSON.parse(JSON.stringify(S))).catch(e => console.error('Firestore save error:', e));
+  const badge = document.getElementById('save-badge');
+  if(badge){
+    badge.style.display='inline-flex';
+    clearTimeout(badge._t);
+    badge._t=setTimeout(()=>badge.style.display='none',2000);
+  }
+}
+
+function gv(id){return document.getElementById(id)?.value||'';}
+function gn(id){return parseInt(document.getElementById(id)?.value)||0;}
+function gc(id){return document.getElementById(id)?.checked||false;}
+function sv(id,val){const el=document.getElementById(id);if(el)el.value=val;}
+function sc(id,val){const el=document.getElementById(id);if(el)el.checked=val;}
+
+function sw(tab,el){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  el.classList.add('active');
+  if(tab==='ranking') renderRanking();
+  if(tab==='horses'){renderHorseList();renderOwnerSel();}
+  if(tab==='race'){renderRaceHorseSel();renderRaceHist();}
+  if(tab==='owners') renderOwnerList();
+}
+
+function getPt(grade,place){
+  const p=parseInt(place);
+  const tbl={newface:[8,0,0,0,0,0],maiden:[5,0,0,0,0,0],flat:[10,0,0,0,0,0],OP:[15,8,0,0,0,0],G3:[20,15,10,0,0,0],G2:[30,20,15,0,0,0],G1:[50,30,20,15,10,5]};
+  const g=tbl[grade]||[0,0,0,0,0,0];
+  if(p>=1&&p<=5) return g[p-1]||0;
+  if(p>=6&&p<=8) return grade==='G1'?g[5]:0;
+  return 0;
+}
+
+function calcPts(r){
+  const horse=S.horses.find(h=>h.id===r.horseId);
+  const isLast=r.place==='last';
+  const place=isLast?99:parseInt(r.place);
+  let pt=getPt(r.grade,place);
+  if(place===1){
+    if(r.sp_record) pt+=5;
+    if(r.sp_tansho) pt+=10;
+    if(r.sp_umaren) pt+=5;
+    if(r.sp_umatan) pt+=5;
+    if(r.sp_derby) pt+=50;
+    if(r.sp_g1x2) pt+=50;
+    if(horse&&horse.chu) pt+=5;
+  }
+  if(isLast) pt-=3;
+  return pt;
+}
+
+function calcPtDetail(r){
+  const horse=S.horses.find(function(h){return h.id===r.horseId;});
+  const isLast=r.place==='last';
+  const place=isLast?99:parseInt(r.place);
+  const base=getPt(r.grade,place);
+  const specials=[];
+  if(place===1){
+    if(r.sp_record) specials.push('レコード+5');
+    if(r.sp_tansho) specials.push('単勝万券+10');
+    if(r.sp_umaren) specials.push('馬連万券+5');
+    if(r.sp_umatan) specials.push('馬単万券+5');
+    if(r.sp_derby) specials.push('ダービー+50');
+    if(r.sp_g1x2) specials.push('G1複数+50');
+    if(horse&&horse.chu) specials.push('抽せん馬+5');
+  }
+  if(isLast) specials.push('最下位−3');
+  return {base:base, specials:specials, total:calcPts(r)};
+}
+
+function toggleDetail(rowId, chevronId){
+  const row=document.getElementById(rowId);
+  const chv=document.getElementById(chevronId);
+  if(!row) return;
+  const isOpen=row.style.display!=='none';
+  row.style.display=isOpen?'none':'table-row';
+  if(chv) chv.textContent=isOpen?'▶':'▼';
+}
+
+function inPeriod(d){
+  if(!S.start&&!S.end) return true;
+  const dt=new Date(d);
+  if(S.start&&dt<new Date(S.start)) return false;
+  if(S.end&&dt>new Date(S.end)) return false;
+  return true;
+}
+
+function horseLink(h, style=''){
+  if(!h || !h.jraUrl) return h ? h.name : '不明';
+  return `<a href="${h.jraUrl}" target="_blank" style="color:inherit;text-decoration:none;border-bottom:1px dotted #9ca3af;${style}">${h.name}</a>`;
+}
+
+function renderRanking(){
+  const op={},hp={};
+  S.owners.forEach(o=>{op[o.id]=0;});
+  S.horses.forEach(h=>{hp[h.id]={name:h.name,ownerId:h.ownerId,pts:0,runs:0};});
+  S.races.forEach(r=>{
+    if(!inPeriod(r.date)) return;
+    const pt=calcPts(r);
+    if(hp[r.horseId]!==undefined){
+      hp[r.horseId].pts+=pt; hp[r.horseId].runs++;
+      const horse=S.horses.find(h=>h.id===r.horseId);
+      if(horse) op[horse.ownerId]=(op[horse.ownerId]||0)+pt;
+    }
+  });
+  // 全馬出走ボーナス（+30pt）・全馬勝利ボーナス（+50pt）：期間内に1度以上出走/勝利で自動加算
+  const bonusRun=new Set(), bonusWin=new Set();
+  S.owners.forEach(o=>{
+    const ownerHorses=S.horses.filter(h=>h.ownerId===o.id);
+    if(!ownerHorses.length) return;
+    const periodRaces=S.races.filter(r=>inPeriod(r.date)&&ownerHorses.some(h=>h.id===r.horseId));
+    const horsesRun=new Set(periodRaces.map(r=>r.horseId));
+    const horsesWon=new Set(periodRaces.filter(r=>r.place==='1').map(r=>r.horseId));
+    if(ownerHorses.every(h=>horsesRun.has(h.id))){ op[o.id]=(op[o.id]||0)+30; bonusRun.add(o.id); }
+    if(ownerHorses.every(h=>horsesWon.has(h.id))){ op[o.id]=(op[o.id]||0)+50; bonusWin.add(o.id); }
+  });
+  const os=S.owners.map(o=>({...o,pts:op[o.id]||0})).sort((a,b)=>b.pts-a.pts);
+  const hs=Object.values(hp).filter(h=>h.pts>0||h.runs>0).sort((a,b)=>b.pts-a.pts);
+  document.getElementById('metrics').innerHTML='';
+  const bl=['b-gold','b-silver','b-bronze'];
+  document.getElementById('owner-rank').innerHTML=!os.length?'<div class="empty">参加者が登録されていません</div>':
+    `<table class="horse-table" style="width:auto;"><thead><tr><th style="width:36px;">順位</th><th style="min-width:80px;">指名者</th><th style="width:72px;">指名頭数</th><th style="width:80px;text-align:right;">獲得pt</th><th style="min-width:140px;text-align:right;color:#6b7280;font-weight:400;font-size:11px;">内訳（全出走 / 全勝利）</th></tr></thead><tbody>${os.map((o,i)=>{const ptColor=o.pts>0?'color:#16a34a;font-weight:700;':o.pts<0?'color:#dc2626;font-weight:700;':'';const runPt=bonusRun.has(o.id)?'<span style="color:#166534;font-weight:600;">+30</span>':'<span style="color:#9ca3af;">0</span>';const winPt=bonusWin.has(o.id)?'<span style="color:#854d0e;font-weight:600;">+50</span>':'<span style="color:#9ca3af;">0</span>';return`<tr><td style="color:#6b7280;font-size:12px;text-align:center;">${i+1}</td><td style="font-weight:500;">${o.name}</td><td style="color:#6b7280;font-size:12px;">${o.count}頭</td><td style="text-align:right;${ptColor}">${o.pts}pt</td><td style="text-align:right;font-size:12px;color:#6b7280;white-space:nowrap;">全出走 ${runPt}pt　全勝利 ${winPt}pt</td></tr>`;}).join('')}</tbody></table>`;
+  const allHs=Object.values(hp).sort((a,b)=>b.pts-a.pts||b.runs-a.runs);
+  // 馬ごとのレース一覧を構築（内訳展開用）
+  const hraces={};
+  S.horses.forEach(function(h){hraces[h.id]=[];});
+  S.races.filter(function(r){return inPeriod(r.date);}).forEach(function(r){if(hraces[r.horseId]!==undefined) hraces[r.horseId].push(r);});
+  const gradeLabels={G1:'G1',G2:'G2',G3:'G3',OP:'OP/Listed',flat:'平場',maiden:'未勝利',newface:'新馬'};
+  document.getElementById('horse-rank').innerHTML=!allHs.length?'<div class="empty">馬が登録されていません</div>':
+    '<table class="horse-table" style="width:auto;"><thead><tr>'
+    +'<th style="width:36px;">順位</th>'
+    +'<th style="min-width:120px;">馬名</th>'
+    +'<th style="min-width:60px;">指名者</th>'
+    +'<th style="width:48px;">出走</th>'
+    +'<th style="width:80px;text-align:right;">獲得pt</th>'
+    +'</tr></thead><tbody>'
+    +allHs.map(function(h,i){
+      const o=S.owners.find(function(ow){return ow.id===h.ownerId;});
+      const ptColor=h.pts>0?'color:#16a34a;font-weight:700;':h.pts<0?'color:#dc2626;font-weight:700;':'color:#6b7280;';
+      const hObj=S.horses.find(function(hx){return hx.name===h.name;});
+      const hid=hObj?hObj.id:null;
+      const races=hid?(hraces[hid]||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);}):[];
+      const hasRaces=races.length>0;
+      // 内訳行を生成
+      let detailHtml='';
+      if(hasRaces){
+        const detailRows=races.map(function(r){
+          const d=calcPtDetail(r);
+          const spHtml=d.specials.length?' <small style="color:#cc88ff;font-size:10px;">'+d.specials.join(' ')+'</small>':'';
+          const ptHtml=d.total>0?'<b style="color:#00cc44;">+'+d.total+'</b>':d.total<0?'<b style="color:#e74c3c;">'+d.total+'</b>':'<span style="color:#555;">0</span>';
+          const placeStr=r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着';
+          return '<tr style="background:'+(r.confirmed?'#003a1a':'#0a0a1a')+';transition:background 0.2s;">'
+            +'<td style="padding:4px 6px;font-size:11px;color:#888;white-space:nowrap;">'+r.date+'</td>'
+            +'<td style="padding:4px 6px;font-size:12px;white-space:nowrap;">'+r.name+'</td>'
+            +'<td style="padding:4px 6px;font-size:11px;color:#888;white-space:nowrap;">'+(gradeLabels[r.grade]||r.grade)+'</td>'
+            +'<td style="padding:4px 6px;font-size:12px;text-align:center;white-space:nowrap;">'+placeStr+'</td>'
+            +'<td style="padding:4px 6px;font-size:12px;text-align:right;white-space:nowrap;">'+ptHtml+spHtml+'</td>'
+            +'<td style="padding:4px 6px;text-align:center;white-space:nowrap;">'
+            +'<input type="checkbox" '+(r.confirmed?'checked':'')+' onclick="event.stopPropagation();toggleConfirmed('+r.id+',this)" title="確認済みにする" style="cursor:pointer;width:auto;accent-color:#00cc44;">'
+            +'</td>'
+            +'<td style="padding:4px 6px;text-align:center;white-space:nowrap;">'
+            +'<button onclick="event.stopPropagation();editRace('+r.id+')" style="font-size:10px;padding:2px 8px;border:1px solid #4488ff;background:#0f1f3a;cursor:pointer;color:#eee;">編集</button>'
+            +'</td>'
+            +'</tr>';
+        }).join('');
+        detailHtml='<tr id="hd-'+hid+'" style="display:none;">'
+          +'<td colspan="5" style="padding:0;background:#0a0a1a;border-bottom:1px solid #1a3060;">'
+          +'<table style="width:auto;border-collapse:collapse;">'
+          +'<thead><tr style="background:#eff2f7;">'
+          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:left;border-bottom:1px solid #e2e8f0;">日付</th>'
+          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:left;border-bottom:1px solid #e2e8f0;">レース</th>'
+          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:left;border-bottom:1px solid #e2e8f0;">区分</th>'
+          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:center;border-bottom:1px solid #e2e8f0;">着順</th>'
+          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:right;border-bottom:1px solid #e2e8f0;">pt</th>'
+          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:center;border-bottom:1px solid #e2e8f0;width:36px;">確認</th>'
+          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:center;border-bottom:1px solid #e2e8f0;width:46px;"></th>'
+          +'</tr></thead>'
+          +'<tbody>'+detailRows+'</tbody>'
+          +'</table></td></tr>';
+      }
+      const chevron=hasRaces?'<span id="chv-'+hid+'" style="font-size:9px;color:#9ca3af;margin-left:5px;">▶</span>':'';
+      const rowStyle=hasRaces?'cursor:pointer;user-select:none;':'';
+      const onclick=hasRaces?'onclick="toggleDetail(\'hd-'+hid+'\',\'chv-'+hid+'\')"':'';
+      return '<tr '+onclick+' style="'+rowStyle+'">'
+        +'<td style="color:#6b7280;font-size:12px;text-align:center;">'+(i+1)+'</td>'
+        +'<td style="font-weight:500;">'+horseLink(hObj)+chevron+'</td>'
+        +'<td style="color:#6b7280;font-size:12px;">'+(o?o.name:'--')+'</td>'
+        +'<td style="color:#6b7280;font-size:12px;text-align:center;">'+h.runs+'戦</td>'
+        +'<td style="text-align:right;'+ptColor+'">'+(h.pts>0?'+':'')+h.pts+'pt</td>'
+        +'</tr>'+detailHtml;
+    }).join('')+'</tbody></table>';
+}
+
+function renderOwnerSel(){
+  document.getElementById('h-owner').innerHTML='<option value="">-- 指名者を選択 --</option>'+S.owners.map(o=>`<option value="${o.id}">${o.name}</option>`).join('');
+}
+function renderRaceHorseSel(){
+  document.getElementById('r-horse').innerHTML='<option value="">-- 馬を選択 --</option>'+S.horses.map(h=>{const o=S.owners.find(ow=>ow.id===h.ownerId);return`<option value="${h.id}">${h.name}（${o?o.name:''}）</option>`;}).join('');
+}
+
+function addOwner(){
+  const name=gv('ow-name').trim(); const count=gn('ow-count')||15;
+  if(!name){alert('参加者名を入力してください');return;}
+  S.owners.push({id:S.nOId++,name,count});
+  document.getElementById('ow-name').value='';
+  saveData();
+  renderOwnerList();
+}
+function renderOwnerList(){
+  document.getElementById('owner-list').innerHTML=!S.owners.length?'<div class="empty">参加者が登録されていません</div>':
+    `<table class="horse-table"><thead><tr><th>参加者名</th><th>指名頭数</th><th></th></tr></thead><tbody>${S.owners.map(o=>`<tr><td style="font-weight:500;">${o.name}</td><td style="color:#6b7280;">${o.count}頭</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editOwner(${o.id})">編集</button> <button class="btn btn-d" onclick="delOwner(${o.id})">×</button></td></tr>`).join('')}</tbody></table>`;
+}
+function delOwner(id){
+  if(!confirm('この参加者を削除しますか？')) return;
+  S.owners=S.owners.filter(o=>o.id!==id);
+  saveData();
+  renderOwnerList();
+}
+function editOwner(id){
+  const o=S.owners.find(o=>o.id===id);
+  if(!o) return;
+  document.getElementById('edit-owner-id').value=id;
+  document.getElementById('edit-owner-name').value=o.name||'';
+  const sel=document.getElementById('edit-owner-count');
+  sel.innerHTML=Array.from({length:20},(_,i)=>i+1).map(n=>`<option value="${n}"${n===o.count?' selected':''}>${n}頭</option>`).join('');
+  document.getElementById('edit-owner-modal').classList.add('open');
+}
+function closeEditOwnerModal(){
+  document.getElementById('edit-owner-modal').classList.remove('open');
+}
+function saveEditOwner(){
+  const id=parseInt(document.getElementById('edit-owner-id').value);
+  const o=S.owners.find(o=>o.id===id);
+  if(!o) return;
+  o.name=document.getElementById('edit-owner-name').value.trim();
+  o.count=parseInt(document.getElementById('edit-owner-count').value);
+  saveData();
+  closeEditOwnerModal();
+  renderOwnerList();
+}
+
+function addHorse(){
+  const name=gv('h-name').trim(); const ownerId=parseInt(gv('h-owner'));
+  if(!name||!ownerId){alert('馬名と指名者を選択してください');return;}
+  S.horses.push({id:S.nHId++,name,ownerId,color:gv('h-color'),stable:gv('h-stable'),trainer:gv('h-trainer').trim(),sire:gv('h-sire').trim(),dam:gv('h-dam').trim(),bms:gv('h-bms').trim(),owner2:gv('h-owner2').trim(),breeder:gv('h-breeder').trim(),chu:gc('h-chu')});
+  const al=document.getElementById('h-alert');
+  al.innerHTML=`<div class="alert-ok">${name}を登録しました</div>`;
+  setTimeout(()=>al.innerHTML='',3000);
+  saveData();
+  clearHorseForm();
+  renderHorseList();
+}
+
+function clearHorseForm(){
+  ['h-name','h-trainer','h-sire','h-dam','h-bms','h-owner2','h-breeder'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('h-chu').checked=false;
+}
+
+window.fillHorseFromJRA=function(data){
+  sv('h-name', data.name||'');
+  if(data.color){
+    const sel=document.getElementById('h-color');
+    for(let i=0;i<sel.options.length;i++){if(sel.options[i].text===data.color){sel.selectedIndex=i;break;}}
+  }
+  if(data.stable){
+    const sel=document.getElementById('h-stable');
+    for(let i=0;i<sel.options.length;i++){if(sel.options[i].value===data.stable){sel.selectedIndex=i;break;}}
+  }
+  sv('h-trainer', data.trainer||'');
+  sv('h-sire', data.sire||'');
+  sv('h-dam', data.dam||'');
+  sv('h-bms', data.bms||'');
+  sv('h-owner2', data.owner||'');
+  sv('h-breeder', data.breeder||'');
+  const al=document.getElementById('h-alert');
+  al.innerHTML=`<div class="alert-ok">JRAページから「${data.name}」の情報を自動入力しました。指名者を選択して「登録する」を押してください。</div>`;
+  document.getElementById('h-owner').focus();
+  const tab=document.querySelector('.tab:nth-child(3)');
+  if(tab&&!tab.classList.contains('active')) tab.click();
+};
+
+function renderHorseList(){
+  if(!S.horses.length){document.getElementById('horse-list').innerHTML='<div class="empty">まだ馬が登録されていません</div>';return;}
+  const gradeLabels={G1:'G1',G2:'G2',G3:'G3',OP:'OP/Listed',flat:'平場',maiden:'未勝利',newface:'新馬'};
+  document.getElementById('horse-list').innerHTML=S.owners.map(o=>{
+    const hs=S.horses.filter(h=>h.ownerId===o.id);
+    if(!hs.length) return '';
+    const rows=hs.map((h,i)=>{
+      const hRaces=S.races.filter(r=>r.horseId===h.id&&inPeriod(r.date)).sort((a,b)=>b.date.localeCompare(a.date));
+      const totalPt=hRaces.reduce((s,r)=>s+calcPts(r),0);
+      const hasRaces=hRaces.length>0;
+      const chevron=hasRaces?`<span id="hl-chv-${h.id}" style="font-size:9px;color:#9ca3af;margin-left:5px;">▶</span>`:'';
+      const clickAttr=hasRaces?`onclick="toggleDetail('hl-hd-${h.id}','hl-chv-${h.id}')"`:'';
+      const rowStyle=`background:${i%2===1?'#0a0a1a':'#0f1f3a'};${hasRaces?'cursor:pointer;user-select:none;':''}`;
+      const ptColor=totalPt>0?'color:#00cc44;font-weight:700;':totalPt<0?'color:#e74c3c;font-weight:700;':'color:#888;';
+      const ptStr=totalPt>0?`+${totalPt}`:String(totalPt);
+      let detailHtml='';
+      if(hasRaces){
+        const detailRows=hRaces.map(r=>{
+          const d=calcPtDetail(r);
+          const spHtml=d.specials.length?` <small style="color:#7c3aed;font-size:10px;">${d.specials.join(' ')}</small>`:'';
+          const ptHtml=d.total>0?`<b style="color:#00cc44;">+${d.total}</b>`:d.total<0?`<b style="color:#e74c3c;">${d.total}</b>`:'<span style="color:#555;">0</span>';
+          const placeStr=r.place==='last'?'最下位':r.place==='9'?'9着以下':`${r.place}着`;
+          return `<tr style="background:${r.confirmed?'#003a1a':'#0a0a1a'};transition:background 0.2s;"><td style="padding:4px 6px;font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td style="padding:4px 6px;font-size:12px;white-space:nowrap;">${r.name}</td><td style="padding:4px 6px;font-size:11px;color:#888;white-space:nowrap;">${gradeLabels[r.grade]||r.grade}</td><td style="padding:4px 6px;font-size:12px;text-align:center;white-space:nowrap;">${placeStr}</td><td style="padding:4px 6px;font-size:12px;text-align:right;white-space:nowrap;">${ptHtml}${spHtml}</td><td style="padding:4px 6px;text-align:center;white-space:nowrap;"><input type="checkbox" ${r.confirmed?'checked':''} onclick="event.stopPropagation();toggleConfirmed(${r.id},this)" title="確認済みにする" style="cursor:pointer;width:auto;accent-color:#00cc44;"></td><td style="padding:4px 6px;text-align:center;white-space:nowrap;"><button onclick="event.stopPropagation();editRace(${r.id})" style="font-size:10px;padding:2px 8px;border:1px solid #4488ff;background:#0f1f3a;cursor:pointer;color:#eee;">編集</button></td></tr>`;
+        }).join('');
+        detailHtml=`<tr id="hl-hd-${h.id}" style="display:none;"><td colspan="10" style="padding:0;background:#0a0a1a;border-bottom:1px solid #1a3060;"><table style="width:auto;border-collapse:collapse;"><thead><tr style="background:#050510;"><th style="padding:5px 6px;font-size:11px;font-weight:600;color:#4488ff;text-align:left;border-bottom:1px solid #1a3060;">日付</th><th style="padding:5px 6px;font-size:11px;font-weight:600;color:#4488ff;text-align:left;border-bottom:1px solid #1a3060;">レース</th><th style="padding:5px 6px;font-size:11px;font-weight:600;color:#4488ff;text-align:left;border-bottom:1px solid #1a3060;">区分</th><th style="padding:5px 6px;font-size:11px;font-weight:600;color:#4488ff;text-align:center;border-bottom:1px solid #1a3060;">着順</th><th style="padding:5px 6px;font-size:11px;font-weight:600;color:#4488ff;text-align:right;border-bottom:1px solid #1a3060;">pt</th><th style="padding:5px 6px;font-size:11px;font-weight:600;color:#4488ff;text-align:center;border-bottom:1px solid #1a3060;width:36px;">確認</th><th style="padding:5px 6px;font-size:11px;border-bottom:1px solid #1a3060;width:46px;"></th></tr></thead><tbody>${detailRows}</tbody></table></td></tr>`;
+      }
+      return `<tr ${clickAttr} style="${rowStyle}"><td style="text-align:center;font-size:13px;font-weight:700;color:${h.chu?'#1d4ed8':'#d1d5db'};">${h.chu?'抽':'−'}</td><td style="font-weight:500;">${horseLink(h)}${chevron}</td><td style="color:#6b7280;font-size:12px;">${h.stable}　${h.trainer}</td><td style="color:#6b7280;font-size:12px;">${h.sire||'−'}</td><td style="color:#6b7280;font-size:12px;">${h.dam||'−'}</td><td style="color:#6b7280;font-size:12px;">${h.bms||'−'}</td><td style="color:#6b7280;font-size:12px;">${h.owner2||'−'}</td><td style="color:#6b7280;font-size:12px;">${h.breeder||'−'}</td><td style="text-align:right;${ptColor};white-space:nowrap;">${ptStr}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="event.stopPropagation();editHorse(${h.id})">編集</button> <button class="btn btn-d" onclick="event.stopPropagation();delHorse(${h.id})">×</button></td></tr>${detailHtml}`;
+    }).join('');
+    return `<div style="margin-bottom:28px;"><div style="font-weight:700;font-size:15px;padding:6px 2px;border-bottom:2px solid #e5e7eb;margin-bottom:10px;">${o.name}（${hs.length}頭）</div><table class="horse-table"><thead><tr><th style="text-align:center;width:36px;">抽</th><th>馬名</th><th>所属</th><th>父</th><th>母</th><th>母父</th><th>馬主</th><th>生産者</th><th style="width:60px;text-align:right;">獲得pt</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }).join('');
+}
+function delHorse(id){
+  if(!confirm('この馬を削除しますか？')) return;
+  S.horses=S.horses.filter(h=>h.id!==id);
+  saveData();
+  renderHorseList();
+}
+function editHorse(id){
+  const h=S.horses.find(h=>h.id===id);
+  if(!h) return;
+  document.getElementById('edit-id').value=id;
+  document.getElementById('edit-name').value=h.name||'';
+  document.getElementById('edit-stable').value=h.stable||'栗東';
+  document.getElementById('edit-trainer').value=h.trainer||'';
+  document.getElementById('edit-color').value=h.color||'鹿毛';
+  document.getElementById('edit-sire').value=h.sire||'';
+  document.getElementById('edit-dam').value=h.dam||'';
+  document.getElementById('edit-bms').value=h.bms||'';
+  document.getElementById('edit-owner2').value=h.owner2||'';
+  document.getElementById('edit-breeder').value=h.breeder||'';
+  document.getElementById('edit-chu').checked=!!h.chu;
+  const sel=document.getElementById('edit-owner');
+  sel.innerHTML=S.owners.map(o=>`<option value="${o.id}"${o.id===h.ownerId?' selected':''}>${o.name}</option>`).join('');
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeEditModal(){
+  document.getElementById('edit-modal').classList.remove('open');
+}
+function saveEditHorse(){
+  const id=parseInt(document.getElementById('edit-id').value);
+  const h=S.horses.find(h=>h.id===id);
+  if(!h) return;
+  h.name=document.getElementById('edit-name').value.trim();
+  h.ownerId=parseInt(document.getElementById('edit-owner').value);
+  h.color=document.getElementById('edit-color').value;
+  h.stable=document.getElementById('edit-stable').value;
+  h.trainer=document.getElementById('edit-trainer').value.trim();
+  h.sire=document.getElementById('edit-sire').value.trim();
+  h.dam=document.getElementById('edit-dam').value.trim();
+  h.bms=document.getElementById('edit-bms').value.trim();
+  h.owner2=document.getElementById('edit-owner2').value.trim();
+  h.breeder=document.getElementById('edit-breeder').value.trim();
+  h.chu=document.getElementById('edit-chu').checked;
+  saveData();
+  closeEditModal();
+  renderHorseList();
+}
+
+function addRace(){
+  const name=gv('r-name').trim(),grade=gv('r-grade'),date=gv('r-date'),horseId=parseInt(gv('r-horse')),place=gv('r-place'),region=gv('r-region');
+  if(!name||!horseId||!date){alert('レース名・馬・日付を入力してください');return;}
+  if(!inPeriod(date)){if(!confirm('この日付は集計期間外です。登録しますか？')) return;}
+  const r={id:S.nRId++,name,grade,date,horseId,place,region,sp_record:gc('sp-record'),sp_tansho:gc('sp-tansho'),sp_umaren:gc('sp-umaren'),sp_umatan:gc('sp-umatan'),sp_derby:gc('sp-derby'),sp_g1x2:gc('sp-g1x2'),confirmed:false};
+  S.races.push(r);
+  const pt=calcPts(r);
+  const al=document.getElementById('race-alert');
+  al.innerHTML=`<div class="alert-ok">${name}を登録しました（${pt>=0?'+':''}${pt}pt）</div>`;
+  setTimeout(()=>al.innerHTML='',3000);
+  document.getElementById('r-name').value=''; document.getElementById('r-horse').value='';
+  ['sp-record','sp-tansho','sp-umaren','sp-umatan','sp-derby','sp-g1x2'].forEach(id=>document.getElementById(id).checked=false);
+  saveData();
+  renderRaceHist();
+}
+function renderRaceHist(){
+  const el=document.getElementById('race-hist');
+  if(!S.races.length){el.innerHTML='<div class="empty">まだ結果が登録されていません</div>';return;}
+  const gl={G1:'G1',G2:'G2',G3:'G3',OP:'OP/Listed',flat:'平場',maiden:'未勝利',newface:'新馬'};
+  const rl={JRA:'JRA',local:'地方',overseas:'海外'};
+  const sorted=[...S.races].sort((a,b)=>b.date.localeCompare(a.date));
+  el.innerHTML=`<table class="horse-table" style="width:auto;"><thead><tr><th>日付</th><th>レース名</th><th>区分</th><th>馬名</th><th>着順</th><th>pt</th><th></th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#0a0a1a':'#0f1f3a'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td style="white-space:nowrap;">${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span></td><td><span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${horseLink(h)}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editRace(${r.id})">編集</button> <button class="btn btn-d" onclick="delRace(${r.id})">×</button></td></tr>`;}).join('')}</tbody></table>`;
+}
+function delRace(id){
+  S.races=S.races.filter(r=>r.id!==id);
+  saveData();
+  renderRaceHist();
+}
+function editRace(id){
+  const r=S.races.find(r=>r.id===id);
+  if(!r) return;
+  document.getElementById('edit-race-id').value=id;
+  document.getElementById('edit-race-name').value=r.name||'';
+  document.getElementById('edit-race-grade').value=r.grade||'flat';
+  document.getElementById('edit-race-date').value=r.date||'';
+  document.getElementById('edit-race-region').value=r.region||'JRA';
+  document.getElementById('edit-race-place').value=r.place||'1';
+  document.getElementById('edit-sp-record').checked=!!r.sp_record;
+  document.getElementById('edit-sp-tansho').checked=!!r.sp_tansho;
+  document.getElementById('edit-sp-umaren').checked=!!r.sp_umaren;
+  document.getElementById('edit-sp-umatan').checked=!!r.sp_umatan;
+  document.getElementById('edit-sp-derby').checked=!!r.sp_derby;
+  document.getElementById('edit-sp-g1x2').checked=!!r.sp_g1x2;
+  const sel=document.getElementById('edit-race-horse');
+  sel.innerHTML=S.horses.map(h=>`<option value="${h.id}"${h.id===r.horseId?' selected':''}>${h.name}</option>`).join('');
+  document.getElementById('edit-race-modal').classList.add('open');
+  sel.onchange=updateEditAutoSpIndicators;
+  document.getElementById('edit-race-place').onchange=updateEditAutoSpIndicators;
+  updateEditAutoSpIndicators();
+}
+function closeEditRaceModal(){
+  document.getElementById('edit-race-modal').classList.remove('open');
+}
+function saveEditRace(){
+  const id=parseInt(document.getElementById('edit-race-id').value);
+  const r=S.races.find(r=>r.id===id);
+  if(!r) return;
+  r.name=document.getElementById('edit-race-name').value.trim();
+  r.grade=document.getElementById('edit-race-grade').value;
+  r.date=document.getElementById('edit-race-date').value;
+  r.horseId=parseInt(document.getElementById('edit-race-horse').value);
+  r.place=document.getElementById('edit-race-place').value;
+  r.region=document.getElementById('edit-race-region').value;
+  r.sp_record=document.getElementById('edit-sp-record').checked;
+  r.sp_tansho=document.getElementById('edit-sp-tansho').checked;
+  r.sp_umaren=document.getElementById('edit-sp-umaren').checked;
+  r.sp_umatan=document.getElementById('edit-sp-umatan').checked;
+  r.sp_derby=document.getElementById('edit-sp-derby').checked;
+  r.sp_g1x2=document.getElementById('edit-sp-g1x2').checked;
+  saveData();
+  closeEditRaceModal();
+  renderRaceHist();
+  if(document.getElementById('ranking').classList.contains('active')) renderRanking();
+  if(document.getElementById('horses').classList.contains('active')) renderHorseList();
+}
+
+function toggleConfirmed(id, cb){
+  const r=S.races.find(r=>r.id===id);
+  if(!r) return;
+  r.confirmed=cb.checked;
+  saveData();
+  // 行の背景色をリアルタイムで更新
+  const tr=cb.closest('tr');
+  if(tr) tr.style.background=r.confirmed?'#003a1a':'#0a0a1a';
+}
+
+function saveSettings(){
+  S.name=gv('s-name')||'マルコメ杯POG'; S.round=gn('s-round')||31;
+  S.start=gv('s-start'); S.end=gv('s-end');
+  document.getElementById('pog-title').textContent=`第${S.round}回 ${S.name}`;
+  const p=S.start&&S.end?`集計期間：${S.start} 〜 ${S.end}`:S.start?`集計開始：${S.start}`:'集計期間：未設定';
+  document.getElementById('meta-period').textContent=p;
+  document.getElementById('meta-updated').textContent=`最終更新：${new Date().toLocaleDateString('ja-JP')}`;
+  saveData();
+  alert('設定を保存しました');
+}
+
+// データ管理機能
+function exportJSON(){
+  const json=JSON.stringify(S, null, 2);
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(json).then(()=>{
+      const al=document.getElementById('export-alert');
+      al.innerHTML='<div class="alert-ok">✓ JSONをクリップボードにコピーしました。Claudeに貼り付けてNotion同期を依頼できます。</div>';
+      setTimeout(()=>al.innerHTML='',4000);
+    }).catch(()=>showJSON());
+  } else {
+    showJSON();
+  }
+}
+
+function showJSON(){
+  const display=document.getElementById('json-display');
+  const text=document.getElementById('json-text');
+  text.value=JSON.stringify(S, null, 2);
+  display.style.display='block';
+  text.select();
+}
+
+function importJSON(){
+  const text=document.getElementById('import-text').value.trim();
+  if(!text){alert('JSONデータを貼り付けてください');return;}
+  try {
+    const data=JSON.parse(text);
+    if(!data.owners||!data.horses||!data.races){alert('無効なデータ形式です');return;}
+    if(!confirm('現在のデータを上書きしてインポートしますか？')) return;
+    S=data;
+    // DEFAULT_DATA から不足フィールドを補完（jraUrl・血統情報など）
+    DEFAULT_DATA.horses.forEach(def => {
+      const h = S.horses.find(h => h.id === def.id);
+      if (h) {
+        if (!h.sire    && def.sire)    h.sire    = def.sire;
+        if (!h.dam     && def.dam)     h.dam     = def.dam;
+        if (!h.bms     && def.bms)     h.bms     = def.bms;
+        if (!h.color   && def.color)   h.color   = def.color;
+        if (!h.owner2  && def.owner2)  h.owner2  = def.owner2;
+        if (!h.breeder && def.breeder) h.breeder = def.breeder;
+        if (!h.jraUrl  && def.jraUrl)  h.jraUrl  = def.jraUrl;
+      }
+    });
+    saveData();
+    const al=document.getElementById('import-alert');
+    al.innerHTML='<div class="alert-ok">✓ データをインポートしました</div>';
+    setTimeout(()=>al.innerHTML='',3000);
+    document.getElementById('import-text').value='';
+    renderRanking();
+  } catch(e){
+    alert('JSONの解析に失敗しました。正しいJSON形式か確認してください。');
+  }
+}
+
+function resetData(){
+  if(!confirm('本当にすべてのデータをリセットしますか？この操作は元に戻せません。')) return;
+  if(!confirm('最終確認：参加者・指名馬・レース結果がすべて削除されます。よろしいですか？')) return;
+  localStorage.removeItem('marukome_pog_v4');
+  S=JSON.parse(JSON.stringify(DEFAULT_DATA));
+  saveData();
+  renderRanking();
+  alert('データをリセットしました');
+}
+
+function updateAutoSpIndicators(){
+  const place=document.getElementById('r-place').value;
+  const horseId=parseInt(document.getElementById('r-horse').value);
+  const horse=S.horses.find(h=>h.id===horseId);
+  document.getElementById('sp-donziri').checked=(place==='last');
+  document.getElementById('sp-chu').checked=(place==='1'&&!!(horse&&horse.chu));
+}
+function updateEditAutoSpIndicators(){
+  const place=document.getElementById('edit-race-place').value;
+  const horseId=parseInt(document.getElementById('edit-race-horse').value);
+  const horse=S.horses.find(h=>h.id===horseId);
+  document.getElementById('edit-sp-donziri').checked=(place==='last');
+  document.getElementById('edit-sp-chu').checked=(place==='1'&&!!(horse&&horse.chu));
+}
+
+function initApp(){
+  const oc=document.getElementById('ow-count');
+  for(let i=1;i<=20;i++){const o=document.createElement('option');o.value=i;o.textContent=i+'頭';if(i===15)o.selected=true;oc.appendChild(o);}
+  const sr=document.getElementById('s-round');
+  for(let i=1;i<=50;i++){const o=document.createElement('option');o.value=i;o.textContent=`第${i}回`;if(i===31)o.selected=true;sr.appendChild(o);}
+  document.getElementById('r-date').valueAsDate=new Date();
+  document.getElementById('r-place').addEventListener('change',updateAutoSpIndicators);
+  document.getElementById('r-horse').addEventListener('change',updateAutoSpIndicators);
+  // 保存済みの設定を画面に反映
+  if(S.name) sv('s-name', S.name);
+  if(S.start) sv('s-start', S.start);
+  if(S.end) sv('s-end', S.end);
+  if(S.round){
+    const sr=document.getElementById('s-round');
+    for(let i=0;i<sr.options.length;i++){if(parseInt(sr.options[i].value)===S.round){sr.selectedIndex=i;break;}}
+  }
+  document.getElementById('pog-title').textContent=`第${S.round}回 ${S.name}`;
+  if(S.start&&S.end) document.getElementById('meta-period').textContent=`集計期間：${S.start} 〜 ${S.end}`;
+  renderRanking();
+}
+
+// Firestoreからデータを読み込んでからアプリ初期化
+POG_REF.get().then(docSnap => {
+  if (docSnap.exists) {
+    S = docSnap.data();
+    // DEFAULT_DATAから血統情報を補完
+    DEFAULT_DATA.horses.forEach(def => {
+      const h = S.horses ? S.horses.find(h => h.id === def.id) : null;
+      if (h) {
+        if (!h.sire    && def.sire)    h.sire    = def.sire;
+        if (!h.dam     && def.dam)     h.dam     = def.dam;
+        if (!h.bms     && def.bms)     h.bms     = def.bms;
+        if (!h.color   && def.color)   h.color   = def.color;
+        if (!h.owner2  && def.owner2)  h.owner2  = def.owner2;
+        if (!h.breeder && def.breeder) h.breeder = def.breeder;
+        if (!h.jraUrl  && def.jraUrl)  h.jraUrl  = def.jraUrl;
+      }
+    });
+  }
+  initApp();
+}).catch(e => {
+  console.error('Firestore load error:', e);
+  initApp();
+});
+</script>
+</body>
+</html>

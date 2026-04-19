@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G1 三頭勝負</title>
+    <style>
+        /* ===== Reset & Base ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif;
+            background: #f0f4f0;
+            color: #222;
+            min-height: 100vh;
+        }
+
+        /* ===== Header ===== */
+        header {
+            background: #006633;
+            padding: 14px 20px;
+            text-align: center;
+        }
+        header h1 { font-size: 1.2rem; color: #fff; font-weight: 900; letter-spacing: 0.05em; }
+        header p  { font-size: 0.8rem; color: rgba(255,255,255,0.75); margin-top: 4px; }
+
+        /* ===== Tabs ===== */
+        .tabs {
+            display: flex;
+            background: #fff;
+            border-bottom: 3px solid #006633;
+            position: sticky; top: 0; z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+        .tab {
+            flex: 1; padding: 12px 4px; text-align: center;
+            cursor: pointer; font-size: 0.82rem; color: #666;
+            transition: all 0.2s; border-bottom: 3px solid transparent; margin-bottom: -3px;
+        }
+        .tab.active { color: #006633; border-bottom-color: #006633; font-weight: bold; }
+        .tab:hover  { color: #006633; background: #f0f8f4; }
+
+        /* ===== Content panels ===== */
+        .content { display: none; padding: 16px; max-width: 600px; margin: 0 auto; }
+        .content.active { display: block; }
+
+        /* ===== Cards ===== */
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #d4e8d4;
+            box-shadow: 0 1px 4px rgba(0,102,51,0.07);
+        }
+        .card h2 {
+            font-size: 0.95rem; color: #006633; font-weight: 700;
+            margin-bottom: 12px; padding-bottom: 8px;
+            border-bottom: 2px solid #e8f5ee;
+        }
+
+        /* ===== Form elements ===== */
+        label { display: block; font-size: 0.78rem; color: #555; margin-bottom: 3px; }
+        input[type="text"], input[type="number"], select {
+            width: 100%; padding: 8px 10px;
+            background: #fff; border: 1px solid #ccc;
+            border-radius: 6px; color: #222; font-size: 0.9rem;
+            margin-bottom: 10px; font-family: inherit;
+        }
+        input:focus, select:focus { outline: none; border-color: #006633; box-shadow: 0 0 0 2px rgba(0,102,51,0.15); }
+        select option { background: #fff; }
+
+        /* ===== Buttons ===== */
+        .btn {
+            padding: 10px 16px; border: none; border-radius: 6px;
+            cursor: pointer; font-size: 0.88rem; font-weight: bold;
+            transition: all 0.2s; font-family: inherit;
+        }
+        .btn-primary  { background: #006633; color: #fff; }
+        .btn-primary:hover  { background: #005229; }
+        .btn-secondary { background: #fff; color: #333; border: 1px solid #ccc; }
+        .btn-secondary:hover { background: #f5f5f5; }
+        .btn-danger   { background: #c0392b; color: #fff; }
+        .btn-danger:hover   { background: #a93226; }
+        .btn-success  { background: #27ae60; color: #fff; }
+        .btn-success:hover  { background: #219a52; }
+        .btn-full { width: 100%; margin-bottom: 8px; }
+
+        /* ===== Player sections ===== */
+        .player-section {
+            border: 1px solid #d4e8d4; border-radius: 8px;
+            padding: 12px; margin-bottom: 12px;
+        }
+        .player-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .player-badge {
+            width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 0.88rem; flex-shrink: 0; color: #fff;
+        }
+        .badge-a { background: #c0392b; }
+        .badge-b { background: #2980b9; }
+        .badge-c { background: #27ae60; }
+
+        /* ===== Horse row ===== */
+        .horse-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; align-items: start; }
+        .horse-row label { margin-bottom: 2px; }
+
+        /* ===== Results area ===== */
+        .result-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .result-row .horse-label { flex: 1; font-size: 0.88rem; }
+        .result-row select { width: 130px; margin-bottom: 0; }
+
+        /* ===== Result table ===== */
+        .result-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+        .result-table th { background: #f0f8f4; padding: 7px 8px; text-align: center; font-size: 0.78rem; color: #006633; border-bottom: 2px solid #d4e8d4; }
+        .result-table td { padding: 7px 8px; text-align: center; border-bottom: 1px solid #eee; color: #222; }
+        .result-table tr:last-child td { border-bottom: none; }
+        .pt-pos { color: #006633; font-weight: bold; }
+        .pt-neg { color: #c0392b; }
+
+        /* ===== Winner banner ===== */
+        .winner-banner {
+            background: linear-gradient(135deg, #006633, #00a651);
+            border-radius: 8px; padding: 12px; text-align: center; margin-bottom: 12px;
+        }
+        .winner-banner .crown { font-size: 1.6rem; }
+        .winner-banner h3 { color: #fff; font-size: 1rem; margin-top: 4px; }
+
+        /* ===== Pts boxes ===== */
+        .pts-display { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+        .pts-box { background: #f0f8f4; border-radius: 8px; padding: 10px; text-align: center; border: 1px solid #d4e8d4; }
+        .pts-box.winner { border-color: #f0a500; background: #fffbf0; }
+        .pts-box .pname { font-size: 0.75rem; color: #666; }
+        .pts-box .ppls  { font-size: 1.25rem; font-weight: bold; color: #006633; margin: 4px 0; }
+        .pts-box .pvpts { font-size: 0.75rem; }
+        .vpts-gain { color: #27ae60; }
+        .vpts-loss { color: #c0392b; }
+
+        /* ===== Race history cards ===== */
+        .race-card { background: #f9fdf9; border: 1px solid #d4e8d4; border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
+        .race-card:hover { border-color: #006633; box-shadow: 0 2px 8px rgba(0,102,51,0.1); }
+        .race-card .rc-title { font-size: 0.95rem; font-weight: bold; color: #006633; }
+        .race-card .rc-meta  { font-size: 0.78rem; color: #888; margin-top: 3px; }
+        .rc-winner { font-size: 0.8rem; color: #2980b9; margin-top: 5px; }
+
+        /* ===== Rankings ===== */
+        .ranking-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; margin-bottom: 8px; }
+        .rank-1 { background: linear-gradient(135deg,rgba(240,165,0,.15),rgba(240,165,0,.05)); border: 1px solid rgba(240,165,0,.5); }
+        .rank-2 { background: linear-gradient(135deg,rgba(192,192,192,.15),rgba(192,192,192,.05)); border: 1px solid rgba(192,192,192,.4); }
+        .rank-3 { background: linear-gradient(135deg,rgba(176,96,50,.15),rgba(176,96,50,.05)); border: 1px solid rgba(176,96,50,.4); }
+        .rank-other { background: #fff; border: 1px solid #d4e8d4; }
+        .rank-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; flex-shrink: 0; }
+        .rank-1 .rank-num { background: #f0a500; color: #fff; }
+        .rank-2 .rank-num { background: #9e9e9e; color: #fff; }
+        .rank-3 .rank-num { background: #b06032; color: #fff; }
+        .rank-other .rank-num { background: #e8f5ee; color: #006633; }
+        .rank-info { flex: 1; }
+        .rank-name { font-size: 0.95rem; font-weight: bold; color: #222; }
+        .rank-sub  { font-size: 0.78rem; color: #888; margin-top: 2px; }
+        .rank-total { font-size: 1.1rem; font-weight: bold; color: #006633; }
+
+        /* ===== Modal ===== */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 100; overflow-y: auto; padding: 20px; align-items: flex-start; justify-content: center; }
+        .modal.open { display: flex; }
+        .modal-inner { background: #fff; border-radius: 12px; padding: 20px; width: 100%; max-width: 540px; border: 1px solid #d4e8d4; margin: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .modal-close { background: none; border: none; color: #999; font-size: 1.4rem; cursor: pointer; padding: 0 4px; line-height: 1; }
+
+        /* ===== Preset tags ===== */
+        .preset-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+        .preset-tag { background: #f0f8f4; border: 1px solid #d4e8d4; border-radius: 12px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; color: #333; }
+        .preset-tag:hover { border-color: #c0392b; color: #c0392b; background: #fff5f5; }
+
+        /* ===== Utilities ===== */
+        .flex-gap { display: flex; gap: 8px; }
+        .mt-8  { margin-top: 8px; }
+        .mt-12 { margin-top: 12px; }
+        .text-center { text-align: center; }
+        .text-muted  { color: #888; font-size: 0.85rem; }
+        .divider { border: none; border-top: 1px solid #e8f5ee; margin: 12px 0; }
+        .badge-winner { background: #f0a500; color: #fff; border-radius: 4px; padding: 2px 6px; font-size: 0.72rem; font-weight: bold; margin-left: 6px; }
+        .player-inline-badge { display: inline-flex; width: 18px; height: 18px; border-radius: 50%; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold; vertical-align: middle; color: #fff; }
+        .horse-add-row { display: flex; gap: 6px; margin-bottom: 10px; }
+        .horse-add-row input { flex: 1; margin-bottom: 0; }
+
+        /* ===== Season toggle ===== */
+        .season-toggle { display: flex; gap: 0; margin-bottom: 10px; }
+        .season-btn { flex: 1; padding: 10px; text-align: center; cursor: pointer; border: 1px solid #ccc; font-size: 0.9rem; font-weight: bold; color: #666; background: #fff; transition: all 0.2s; }
+        .season-btn:first-child { border-radius: 6px 0 0 6px; }
+        .season-btn:last-child  { border-radius: 0 6px 6px 0; border-left: none; }
+        .season-btn.active-haru { background: #e84393; border-color: #e84393; color: #fff; }
+        .season-btn.active-aki  { background: #e87c23; border-color: #e87c23; color: #fff; }
+
+        /* ===== Season badges ===== */
+        .season-badge { display: inline-block; border-radius: 4px; padding: 2px 7px; font-size: 0.7rem; font-weight: bold; margin-right: 6px; vertical-align: middle; }
+        .badge-haru { background: #e84393; color: #fff; }
+        .badge-aki  { background: #e87c23; color: #fff; }
+        .header-season { display: inline-block; background: rgba(255,255,255,0.2); border-radius: 12px; padding: 2px 10px; font-size: 0.78rem; color: #fff; margin-top: 5px; }
+
+        /* ===== Filter bar ===== */
+        .filter-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .filter-bar label { margin: 0; font-size: 0.78rem; color: #555; white-space: nowrap; }
+        .filter-bar select { width: auto; flex: 1; min-width: 140px; margin-bottom: 0; }
+
+        /* ===== Settings preview ===== */
+        .settings-preview { background: #f0f8f4; border-radius: 8px; padding: 12px; margin-bottom: 12px; border-left: 4px solid #006633; }
+        .settings-preview .sp-title { font-size: 0.78rem; color: #666; margin-bottom: 4px; }
+        .settings-preview .sp-val   { font-size: 1.05rem; font-weight: bold; color: #006633; }
+
+        /* ===== Schedule chips ===== */
+        .schedule-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+        .schedule-chip { background: #f0f8f4; border: 1px solid #d4e8d4; border-radius: 16px; padding: 5px 12px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; color: #444; }
+        .schedule-chip:hover { border-color: #006633; color: #006633; background: #e8f5ee; }
+        .schedule-chip.used  { border-color: #27ae60; color: #27ae60; background: #f0fdf4; }
+
+        /* ===== Fetch result ===== */
+        .fetch-result { background: #f9fdf9; border-radius: 8px; padding: 12px; margin-top: 10px; max-height: 280px; overflow-y: auto; border: 1px solid #d4e8d4; }
+        .fetch-result-header { font-size: 0.78rem; color: #006633; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #d4e8d4; }
+        .fetch-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.88rem; }
+        .fetch-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #006633; flex-shrink: 0; margin-bottom: 0; }
+        .fetch-item label { margin: 0; cursor: pointer; color: #333; font-size: 0.88rem; }
+
+        /* ===== Spinner ===== */
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,102,51,0.2); border-top-color: #006633; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== Schedule list ===== */
+        .schedule-list-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #f9fdf9; border-radius: 6px; margin-bottom: 5px; font-size: 0.85rem; border: 1px solid #d4e8d4; }
+        .schedule-list-item span { flex: 1; }
+        .schedule-list-item button { background: none; border: none; color: #c0392b; cursor: pointer; font-size: 1rem; padding: 0 2px; line-height: 1; }
+        .schedule-list-item button:hover { color: #e74c3c; }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 380px) {
+            .horse-row   { grid-template-columns: 1fr; }
+            .pts-display { grid-template-columns: 1fr; }
+            .flex-gap    { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ローディング画面 -->
+<div id="loadingOverlay" style="display:flex; position:fixed; inset:0; background:#006633; z-index:999;
+     align-items:center; justify-content:center; flex-direction:column; gap:14px;">
+    <div style="font-size:2.5rem;">🏇</div>
+    <div style="color:#fff; font-size:1rem; letter-spacing:0.05em;">データを読み込み中...</div>
+</div>
+
+<!-- ========== Header ========== -->
+<header>
+    <h1>🏇 G1 三頭勝負</h1>
+    <div id="headerSeason"></div><!-- 大会名チップがここに入る -->
+</header>
+
+<!-- ========== Tabs ========== -->
+<div class="tabs">
+    <div class="tab" onclick="showTab('race')">🏁 レース入力</div>
+    <div class="tab active" onclick="showTab('seiseki')">📊 成績</div>
+    <div class="tab" onclick="showTab('settings')">⚙️ 設定</div>
+</div>
+
+<!-- ========== Tab: Race Entry ========== -->
+<div id="tab-race" class="content">
+
+    <!-- Race info -->
+    <div class="card">
+        <h2>📝 レース情報</h2>
+        <!-- スケジュールチップ（登録済みの場合に表示） -->
+        <div id="scheduleChipsWrap" style="display:none; margin-bottom:10px;">
+            <div style="font-size:0.75rem; color:#aaa; margin-bottom:5px;">
+                📅 スケジュールから選択（タップでレース名を入力）
+            </div>
+            <div class="schedule-chips" id="scheduleChips"></div>
+        </div>
+        <label>レース名</label>
+        <input type="text" id="raceName" placeholder="例：日本ダービー 2025" />
+        <label>出走頭数（最下位着順の判定に使用）</label>
+        <input type="number" id="totalHorses" placeholder="例：18" min="3" max="20" value="18" />
+    </div>
+
+    <!-- Horse preset management -->
+    <div class="card">
+        <h2>🐴 馬名プリセット管理</h2>
+
+        <!-- Paste import -->
+        <p class="text-muted" style="font-size:0.78rem; margin-bottom:6px;">
+            ① 出馬表ページを全選択コピー（Cmd+A → Cmd+C）　② 下に貼り付けて「抽出」
+        </p>
+        <textarea id="horseImportText" rows="4"
+            style="width:100%; box-sizing:border-box; background:#1a2744; color:#e8eaf6;
+                   border:1px solid #3a4a7a; border-radius:8px; padding:8px; font-size:0.82rem;
+                   resize:vertical;"
+            placeholder="ここにページのテキストを貼り付け..."></textarea>
+        <div style="display:flex; gap:8px; margin-top:6px;">
+            <button class="btn btn-primary btn-full" onclick="importHorsesFromText()">抽出</button>
+            <button class="btn btn-secondary" onclick="clearPastePanel()">クリア</button>
+        </div>
+        <div id="pasteImportStatus" style="font-size:0.78rem; margin-top:6px;"></div>
+
+        <!-- 確認UI -->
+        <div id="horseConfirmPanel" style="display:none; margin-top:8px;">
+            <p style="font-size:0.78rem; color:#aac; margin-bottom:6px;">
+                不要なものをタップして除外 → 「確定」で登録
+            </p>
+            <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <button class="btn btn-secondary" style="font-size:0.72rem; padding:3px 8px;" onclick="selectAllCandidates(true)">全選択</button>
+                <button class="btn btn-secondary" style="font-size:0.72rem; padding:3px 8px;" onclick="selectAllCandidates(false)">全解除</button>
+            </div>
+            <div class="preset-tags" id="horseCandidateTags"></div>
+            <button class="btn btn-primary btn-full" style="margin-top:8px;" onclick="confirmHorseImport()">✅ 確定して登録</button>
+        </div>
+
+        <hr style="border-color:#2a3a6a; margin:10px 0;">
+
+        <!-- Manual add -->
+        <div class="horse-add-row">
+            <input type="text" id="newHorseName" placeholder="馬名を手動追加"
+                   onkeydown="if(event.key==='Enter') addHorsePreset()" />
+            <button class="btn btn-secondary" onclick="addHorsePreset()">追加</button>
+        </div>
+        <div class="preset-tags" id="presetList"></div>
+    </div>
+
+    <!-- Player horse selection -->
+    <div class="card">
+        <h2>🎠 馬の選択（3頭ずつ）</h2>
+
+        <!-- Player A -->
+        <div class="player-section">
+            <div class="player-header">
+                <div class="player-badge badge-a">A</div>
+                <input type="text" id="nameA" placeholder="プレイヤーA名"
+                       style="margin-bottom:0; width:180px;" />
+            </div>
+            <div id="horsesA"></div>
+        </div>
+
+        <!-- Player B -->
+        <div class="player-section">
+            <div class="player-header">
+                <div class="player-badge badge-b">B</div>
+                <input type="text" id="nameB" placeholder="プレイヤーB名"
+                       style="margin-bottom:0; width:180px;" />
+            </div>
+            <div id="horsesB"></div>
+        </div>
+
+        <!-- Player C -->
+        <div class="player-section">
+            <div class="player-header">
+                <div class="player-badge badge-c">C</div>
+                <input type="text" id="nameC" placeholder="プレイヤーC名"
+                       style="margin-bottom:0; width:180px;" />
+            </div>
+            <div id="horsesC"></div>
+        </div>
+    </div>
+
+    <!-- Final positions input -->
+    <div class="card">
+        <h2>🎯 着順入力</h2>
+        <p class="text-muted" style="margin-bottom:10px;">
+            選んだ馬の実際の着順を入力してください<br>
+            <small>最下位（出走頭数と同じ着順）は −3pt</small>
+        </p>
+        <div id="resultsInput">
+            <p class="text-muted">↑ まず馬を選択してください</p>
+        </div>
+        <button class="btn btn-primary btn-full mt-8" onclick="calculateResults()">
+            📊 結果を計算する
+        </button>
+    </div>
+
+    <!-- Result display (hidden until calculated) -->
+    <div class="card" id="resultDisplay" style="display:none;">
+        <h2>🏆 レース結果</h2>
+        <div id="resultContent"></div>
+        <hr class="divider">
+        <div class="flex-gap mt-8">
+            <button class="btn btn-success btn-full" onclick="saveRace()">💾 保存する</button>
+            <button class="btn btn-secondary btn-full" onclick="resetForm()">🔄 リセット</button>
+        </div>
+    </div>
+
+</div><!-- /tab-race -->
+
+<!-- ========== Tab: 成績（ランキング＋履歴） ========== -->
+<div id="tab-seiseki" class="content active">
+    <div class="card">
+        <h2>🏆 ランキング</h2>
+        <p class="text-muted" style="margin-bottom:10px; font-size:0.78rem;">
+            累計勝利ポイント順（勝者 +2000/+1000、敗者 −1000/−2000）
+        </p>
+        <div id="rankingList"></div>
+    </div>
+    <div class="card">
+        <h2>📋 レース履歴</h2>
+        <div class="filter-bar">
+            <label>シーズン絞り込み：</label>
+            <select id="historyFilter" onchange="renderHistory()">
+                <option value="all">全期間</option>
+            </select>
+        </div>
+        <div id="historyList"></div>
+    </div>
+    <div class="flex-gap">
+        <button class="btn btn-secondary btn-full" onclick="exportJSON()">📥 JSONエクスポート</button>
+        <button class="btn btn-secondary btn-full" onclick="document.getElementById('importFile').click()">
+            📤 JSONインポート
+        </button>
+    </div>
+    <input type="file" id="importFile" accept=".json" style="display:none;"
+           onchange="handleImport(event)" />
+</div>
+
+<!-- ========== Tab: Settings ========== -->
+<div id="tab-settings" class="content">
+
+    <!-- 現在の大会設定プレビュー -->
+    <div class="settings-preview" id="settingsPreview" style="display:none;">
+        <div class="sp-title">現在の大会設定</div>
+        <div class="sp-val" id="settingsPreviewVal"></div>
+    </div>
+
+    <div class="card">
+        <h2>⚙️ 大会設定</h2>
+        <p class="text-muted" style="margin-bottom:12px;">
+            年・シーズン・参加者名を設定します。<br>保存後はレース入力の参加者名に自動反映されます。
+        </p>
+
+        <!-- 年 -->
+        <label>大会年</label>
+        <input type="number" id="settingYear" placeholder="例：2025" min="2000" max="2099" />
+
+        <!-- 春 / 秋 トグル -->
+        <label>シーズン</label>
+        <div class="season-toggle">
+            <div class="season-btn" id="btnHaru" onclick="selectSeason('春')">🌸 春</div>
+            <div class="season-btn" id="btnAki"  onclick="selectSeason('秋')">🍂 秋</div>
+        </div>
+
+        <!-- 参加者名 -->
+        <label>参加者A 名前</label>
+        <input type="text" id="settingNameA" placeholder="例：田中" />
+        <label>参加者B 名前</label>
+        <input type="text" id="settingNameB" placeholder="例：佐藤" />
+        <label>参加者C 名前</label>
+        <input type="text" id="settingNameC" placeholder="例：鈴木" />
+
+        <button class="btn btn-primary btn-full mt-8" onclick="saveTournamentSettings()">
+            💾 設定を保存する
+        </button>
+    </div>
+
+    <!-- G1スケジュール登録カード -->
+    <div class="card">
+        <h2>📅 G1レース登録</h2>
+        <p class="text-muted" style="margin-bottom:10px;">
+            対象シーズンのG1レース名を登録します。<br>
+            登録後はレース入力画面でワンタップ入力できます。
+        </p>
+
+        <!-- 取得ボタン群 -->
+        <div class="flex-gap" style="margin-bottom:8px;">
+            <button class="btn btn-secondary btn-full" id="btnWiki" onclick="fetchG1FromWikipedia()">
+                🌐 Wikipediaから取得
+            </button>
+            <button class="btn btn-secondary btn-full" onclick="loadDefaultG1List()">
+                📋 定番リストを使う
+            </button>
+        </div>
+        <p class="text-muted" style="font-size:0.75rem; margin-bottom:8px;">
+            ※ Wikipedia取得は「<span id="wikiTargetLabel"></span>」ページを参照します
+        </p>
+
+        <!-- ローディング -->
+        <div id="scheduleLoading" style="display:none; color:#ffd700; font-size:0.85rem; margin-bottom:8px;">
+            <span class="spinner"></span>取得中...
+        </div>
+
+        <!-- 取得結果チェックリスト -->
+        <div id="fetchResult" style="display:none;">
+            <div class="fetch-result">
+                <div class="fetch-result-header" id="fetchResultHeader"></div>
+                <div id="fetchResultList"></div>
+            </div>
+            <div class="flex-gap mt-8">
+                <button class="btn btn-secondary" onclick="toggleAllFetchItems(true)"  style="flex:1; font-size:0.8rem;">全選択</button>
+                <button class="btn btn-secondary" onclick="toggleAllFetchItems(false)" style="flex:1; font-size:0.8rem;">全解除</button>
+                <button class="btn btn-success"   onclick="addSelectedToSchedule()"   style="flex:1;">✓ 追加</button>
+            </div>
+        </div>
+
+        <!-- 登録済みスケジュール -->
+        <div id="currentScheduleWrap" style="margin-top:12px; display:none;">
+            <div style="font-size:0.8rem; color:#87ceeb; margin-bottom:6px;">
+                📌 登録済み（<span id="scheduleCount">0</span>件）
+                <button class="btn btn-danger" onclick="clearSchedule()"
+                        style="padding:2px 8px; font-size:0.75rem; margin-left:8px;">全削除</button>
+            </div>
+            <div id="currentScheduleList"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🗂️ データ管理</h2>
+        <p class="text-muted" style="margin-bottom:10px;">全期間のデータをまとめてエクスポート・インポートできます。</p>
+        <div class="flex-gap">
+            <button class="btn btn-secondary btn-full" onclick="exportJSON()">📥 JSONエクスポート</button>
+            <button class="btn btn-secondary btn-full" onclick="document.getElementById('importFile2').click()">
+                📤 JSONインポート
+            </button>
+        </div>
+        <input type="file" id="importFile2" accept=".json" style="display:none;"
+               onchange="handleImport(event)" />
+    </div>
+
+</div><!-- /tab-settings -->
+
+<!-- ========== Race Detail Modal ========== -->
+<div class="modal" id="raceModal" onclick="handleModalClick(event)">
+    <div class="modal-inner">
+        <div class="modal-header">
+            <div id="modalTitle" style="color:#ffd700; font-size:1rem; font-weight:bold;"></div>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div id="modalContent"></div>
+        <div class="flex-gap mt-8" id="modalFooter">
+            <button class="btn btn-danger"    onclick="deleteRace()"   style="flex:1;">🗑️ 削除</button>
+            <button class="btn btn-secondary" onclick="enterEditMode()" style="flex:1;">✏️ 編集</button>
+            <button class="btn btn-secondary" onclick="closeModal()"   style="flex:1;">閉じる</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyCxtkpZ-jVcjk7713SwvfGLn6XN5OE81Hs",
+    authDomain: "marukome-cup.firebaseapp.com",
+    projectId: "marukome-cup",
+    storageBucket: "marukome-cup.firebasestorage.app",
+    messagingSenderId: "871741299483",
+    appId: "1:871741299483:web:91eb8cbbc7f30cd67251be"
+};
+firebase.initializeApp(firebaseConfig);
+const db      = firebase.firestore();
+const DATA_REF = db.collection('g1app').doc('data');
+
+function saveToFirestore(updates) {
+    return DATA_REF.set(updates, { merge: true }).catch(e => console.error('保存エラー:', e));
+}
+</script>
+
+<script>
+// ============================================================
+//  グローバル状態
+// ============================================================
+let races        = [];   // 保存済みレース
+let horsePresets = [];   // 馬名プリセット
+let selectedRaceId = null; // モーダルで表示中のレースID
+let currentResult  = null; // 計算済み（未保存）の結果
+
+// 大会設定（年・シーズン・参加者名）
+let tournamentSettings = {
+    year:   new Date().getFullYear(),
+    season: '春',
+    names:  { A: '', B: '', C: '' }
+};
+
+const DEFAULT_HORSES = [];
+
+// ============================================================
+//  初期化
+// ============================================================
+async function init() {
+    try {
+        const docSnap = await DATA_REF.get();
+
+        if (docSnap.exists) {
+            // Firestoreからデータ取得
+            const data   = docSnap.data();
+            races        = data.races    || [];
+            horsePresets = data.horses   || [];
+            g1Schedule   = data.schedule || [];
+            if (data.settings) tournamentSettings = { ...tournamentSettings, ...data.settings };
+        } else {
+            // 初回アクセス：localStorageのデータをFirestoreに移行
+            const lr  = localStorage.getItem('g1races');
+            const lh  = localStorage.getItem('g1horses');
+            const ls  = localStorage.getItem('g1settings');
+            const lsc = localStorage.getItem('g1schedule');
+            const ln  = localStorage.getItem('g1names');
+            if (lr)  races        = JSON.parse(lr);
+            if (lh)  horsePresets = JSON.parse(lh);
+            if (ls)  tournamentSettings = JSON.parse(ls);
+            else if (ln) { const n = JSON.parse(ln); tournamentSettings.names = { A: n.A||'', B: n.B||'', C: n.C||'' }; }
+            if (lsc) g1Schedule   = JSON.parse(lsc);
+            await DATA_REF.set({ races, horses: horsePresets, settings: tournamentSettings, schedule: g1Schedule });
+        }
+    } catch(e) {
+        console.error('Firestore読み込みエラー:', e);
+        // オフライン時はlocalStorageにフォールバック
+        const lr = localStorage.getItem('g1races');
+        if (lr) races = JSON.parse(lr);
+        const lh = localStorage.getItem('g1horses');
+        if (lh) horsePresets = JSON.parse(lh);
+        const ls = localStorage.getItem('g1settings');
+        if (ls) tournamentSettings = JSON.parse(ls);
+        const lsc = localStorage.getItem('g1schedule');
+        if (lsc) g1Schedule = JSON.parse(lsc);
+    }
+
+    // リアルタイム同期：他のユーザーが保存したら自動反映
+    DATA_REF.onSnapshot(snap => {
+        if (!snap.exists) return;
+        const data  = snap.data();
+        races       = data.races || [];
+        g1Schedule  = data.schedule || [];
+        updateSeasonFilterOptions();
+        renderHistory();
+        renderRanking();
+        renderScheduleChips();
+    });
+
+    applySettingsToUI();
+    renderPresetList();
+    renderHorseSelectors();
+    renderScheduleChips();
+    updateSeasonFilterOptions();
+    renderHistory();
+    renderRanking();
+
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+// ============================================================
+//  大会設定管理
+// ============================================================
+
+function persistSettings() {
+    saveToFirestore({ settings: tournamentSettings });
+}
+
+/** 設定タブのフォームに現在の設定値を反映 */
+function populateSettingsForm() {
+    document.getElementById('settingYear').value   = tournamentSettings.year;
+    document.getElementById('settingNameA').value  = tournamentSettings.names.A;
+    document.getElementById('settingNameB').value  = tournamentSettings.names.B;
+    document.getElementById('settingNameC').value  = tournamentSettings.names.C;
+    // 春/秋 トグルのアクティブ状態
+    document.getElementById('btnHaru').className = 'season-btn' +
+        (tournamentSettings.season === '春' ? ' active-haru' : '');
+    document.getElementById('btnAki').className  = 'season-btn' +
+        (tournamentSettings.season === '秋' ? ' active-aki'  : '');
+}
+
+/** 春/秋 ボタン選択 */
+function selectSeason(s) {
+    tournamentSettings.season = s;
+    document.getElementById('btnHaru').className = 'season-btn' + (s === '春' ? ' active-haru' : '');
+    document.getElementById('btnAki').className  = 'season-btn' + (s === '秋' ? ' active-aki'  : '');
+}
+
+/** 設定タブの「保存する」ボタン */
+function saveTournamentSettings() {
+    const year = parseInt(document.getElementById('settingYear').value);
+    if (!year || year < 2000 || year > 2099) {
+        alert('正しい年を入力してください（2000〜2099）'); return;
+    }
+    tournamentSettings.year          = year;
+    tournamentSettings.names.A       = document.getElementById('settingNameA').value.trim();
+    tournamentSettings.names.B       = document.getElementById('settingNameB').value.trim();
+    tournamentSettings.names.C       = document.getElementById('settingNameC').value.trim();
+    persistSettings();
+    applySettingsToUI();
+    // レース入力フォームの参加者名も更新
+    applyNamesToRaceForm();
+    alert(`設定を保存しました：${seasonLabel(tournamentSettings.year, tournamentSettings.season)}`);
+}
+
+/** 設定をUI全体に反映（ヘッダー・プレビュー・フォームなど） */
+function applySettingsToUI() {
+    const label = seasonLabel(tournamentSettings.year, tournamentSettings.season);
+
+    // ヘッダーチップ
+    const chip = document.getElementById('headerSeason');
+    chip.innerHTML = tournamentSettings.names.A || tournamentSettings.names.B
+        ? `<div class="header-season">🏆 ${escH(label)}　${escH(tournamentSettings.names.A||'A')} vs ${escH(tournamentSettings.names.B||'B')} vs ${escH(tournamentSettings.names.C||'C')}</div>`
+        : `<div class="header-season">🏆 ${escH(label)}</div>`;
+
+    // 設定プレビュー（設定タブ上部）
+    const preview = document.getElementById('settingsPreview');
+    const previewVal = document.getElementById('settingsPreviewVal');
+    if (preview && previewVal) {
+        preview.style.display = '';
+        const names = [tournamentSettings.names.A, tournamentSettings.names.B, tournamentSettings.names.C]
+            .filter(Boolean).join('・');
+        previewVal.textContent = label + (names ? `　${names}` : '');
+    }
+
+    // 設定フォームに値を入れる
+    populateSettingsForm();
+
+    // ランキング・履歴フィルターのオプションを更新
+    updateSeasonFilterOptions();
+}
+
+/** レース入力フォームの参加者名を設定から自動入力 */
+function applyNamesToRaceForm() {
+    if (tournamentSettings.names.A) document.getElementById('nameA').value = tournamentSettings.names.A;
+    if (tournamentSettings.names.B) document.getElementById('nameB').value = tournamentSettings.names.B;
+    if (tournamentSettings.names.C) document.getElementById('nameC').value = tournamentSettings.names.C;
+}
+
+/** "2025春" 形式のキーを生成 */
+function toSeasonKey(year, season) { return `${year}${season}`; }
+
+/** 表示用ラベル "2025年 春シーズン" */
+function seasonLabel(year, season) { return `${year}年 ${season}シーズン`; }
+
+/** 保存済みレースから存在するシーズン一覧を取得（新しい順） */
+function getExistingSeasons() {
+    const keys = [...new Set(races.map(r => r.seasonKey).filter(Boolean))];
+    return keys.sort((a, b) => b.localeCompare(a, 'ja'));
+}
+
+/** 履歴・ランキングのフィルタードロップダウンを更新 */
+function updateSeasonFilterOptions() {
+    const seasons = getExistingSeasons();
+    const currentKey = toSeasonKey(tournamentSettings.year, tournamentSettings.season);
+
+    ['historyFilter', 'rankingFilter'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        const prev = sel.value;
+        sel.innerHTML = '<option value="all">全期間</option>' +
+            seasons.map(k => `<option value="${escH(k)}">${escH(k)}</option>`).join('');
+        const hasCurrentKey = [...sel.options].some(o => o.value === currentKey);
+        // historyFilter は現シーズンをデフォルトとし、明示的に「全期間」を選んだ場合のみ保持
+        if (id === 'historyFilter' && prev === 'all' && hasCurrentKey) {
+            sel.value = currentKey;
+        } else if ([...sel.options].some(o => o.value === prev)) {
+            sel.value = prev;
+        } else if (hasCurrentKey) {
+            sel.value = currentKey;
+        }
+    });
+}
+
+// ============================================================
+//  G1 スケジュール管理
+// ============================================================
+
+// 登録済み G1 レーススケジュール
+let g1Schedule = [];
+
+// 春 / 秋 定番 G1 リスト（フォールバック用）
+const G1_DEFAULTS = {
+    春: [
+        'フェブラリーステークス','高松宮記念','大阪杯',
+        '桜花賞','皐月賞','天皇賞（春）',
+        'NHKマイルカップ','ヴィクトリアマイル','オークス',
+        '日本ダービー','安田記念'
+    ],
+    秋: [
+        '宝塚記念','スプリンターズステークス','秋華賞',
+        '菊花賞','天皇賞（秋）','エリザベス女王杯',
+        'マイルチャンピオンシップ','ジャパンカップ','チャンピオンズカップ',
+        '阪神ジュベナイルフィリーズ','朝日杯フューチュリティステークス',
+        '有馬記念','ホープフルステークス'
+    ]
+};
+
+function loadSchedule() { /* Firestoreから読み込むためinitで処理済み */ }
+
+function saveSchedule() {
+    saveToFirestore({ schedule: g1Schedule });
+}
+
+/**
+ * Wikipediaから対象年のG1レース一覧を取得
+ * 参照ページ: https://ja.wikipedia.org/wiki/○○年の競馬
+ * Wikipedia は origin=* でCORSを許可しているため直接 fetch 可能
+ */
+async function fetchG1FromWikipedia() {
+    const year = tournamentSettings.year;
+    const pageName = `${year}年の競馬`;
+
+    setScheduleLoading(true);
+    document.getElementById('fetchResult').style.display = 'none';
+
+    try {
+        // Wikipedia MediaWiki API（CORS対応）
+        const apiUrl = `https://ja.wikipedia.org/w/api.php?` +
+            `action=parse&page=${encodeURIComponent(pageName)}&prop=text&format=json&origin=*`;
+
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const json = await res.json();
+        if (json.error) throw new Error(json.error.info || 'Wikipediaエラー');
+
+        const rawHtml = json.parse.text['*'];
+
+        // HTML をパースして G1 レース名を抽出
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(rawHtml, 'text/html');
+        const foundRaces = extractG1NamesFromWikiDoc(doc);
+
+        if (foundRaces.length === 0) throw new Error('G1レースが見つかりませんでした');
+
+        showFetchedRaces(foundRaces, `Wikipedia「${pageName}」より ${foundRaces.length}件取得`);
+
+    } catch (e) {
+        alert(`取得に失敗しました:\n${e.message}\n\n「定番リストを使う」をお試しください。`);
+    } finally {
+        setScheduleLoading(false);
+    }
+}
+
+/**
+ * Wikipedia の parse HTML から G1 レース名を抽出する
+ * - wikitable の行で "GⅠ" "GI" "G1" が含まれるものを対象
+ * - レース名はその行の最初のリンクテキストまたは最初のセル
+ */
+function extractG1NamesFromWikiDoc(doc) {
+    const G1_PATTERN = /^G[Ⅰ I1Ｉ１]$/;  // GⅠ / GI / G1 などにマッチ
+    const races = new Set();
+
+    // すべての <td> を舐めて grade セルを探す
+    doc.querySelectorAll('td').forEach(td => {
+        const text = td.textContent.trim().replace(/\s+/g, '');
+        if (G1_PATTERN.test(text) || text === 'GⅠ' || text === 'GI' || text === 'G1') {
+            const row = td.closest('tr');
+            if (!row) return;
+
+            // 同じ行にある最初のリンクをレース名候補とする
+            const link = row.querySelector('a');
+            if (link) {
+                const name = link.textContent.trim();
+                // 短すぎる・数字始まり・会場名等を除外
+                if (name.length >= 3 && !/^\d/.test(name) && !name.includes('年')) {
+                    races.add(name);
+                    return;
+                }
+            }
+            // リンクがなければ最初のセルのテキスト
+            const firstTd = row.querySelector('td');
+            if (firstTd && firstTd !== td) {
+                const name = firstTd.textContent.trim();
+                if (name.length >= 3 && !/^\d/.test(name)) races.add(name);
+            }
+        }
+    });
+
+    // テキスト内に "GⅠ" を含む見出しからも拾う（ページ構成によって異なる）
+    if (races.size === 0) {
+        doc.querySelectorAll('li, p').forEach(el => {
+            if (/GⅠ|G1|GI/.test(el.textContent)) {
+                const link = el.querySelector('a');
+                if (link) {
+                    const name = link.textContent.trim();
+                    if (name.length >= 3 && !/^\d/.test(name) && !name.includes('年')) {
+                        races.add(name);
+                    }
+                }
+            }
+        });
+    }
+
+    return [...races];
+}
+
+/** 定番リストから取得してチェックリスト表示 */
+function loadDefaultG1List() {
+    const season = tournamentSettings.season;
+    const list   = G1_DEFAULTS[season] || [];
+    showFetchedRaces(list, `定番リスト（${season}シーズン ${list.length}件）`);
+}
+
+/** 取得結果チェックリストを表示 */
+function showFetchedRaces(races, headerText) {
+    const wrap = document.getElementById('fetchResult');
+    document.getElementById('fetchResultHeader').textContent = headerText;
+
+    document.getElementById('fetchResultList').innerHTML = races.map((name, i) => {
+        // 既に登録済みのものはチェック済み＋グレーアウト
+        const alreadyIn = g1Schedule.includes(name);
+        return `
+            <div class="fetch-item">
+                <input type="checkbox" id="fi_${i}"
+                       ${alreadyIn ? 'checked disabled' : 'checked'}
+                       data-name="${escH(name)}" />
+                <label for="fi_${i}" style="${alreadyIn ? 'color:#666;' : ''}">
+                    ${escH(name)}${alreadyIn ? ' <span style="color:#27ae60;font-size:0.75rem;">✓ 登録済</span>' : ''}
+                </label>
+            </div>
+        `;
+    }).join('');
+
+    wrap.style.display = '';
+}
+
+/** チェックリストの全選択 / 全解除 */
+function toggleAllFetchItems(checked) {
+    document.querySelectorAll('#fetchResultList input[type="checkbox"]:not(:disabled)')
+        .forEach(cb => { cb.checked = checked; });
+}
+
+/** 選択したレースをスケジュールに追加 */
+function addSelectedToSchedule() {
+    const checkboxes = document.querySelectorAll('#fetchResultList input[type="checkbox"]:checked:not(:disabled)');
+    let added = 0;
+    checkboxes.forEach(cb => {
+        const name = cb.dataset.name;
+        if (name && !g1Schedule.includes(name)) {
+            g1Schedule.push(name);
+            added++;
+        }
+    });
+    saveSchedule();
+    renderScheduleInSettings();
+    renderScheduleChips();
+    document.getElementById('fetchResult').style.display = 'none';
+    if (added > 0) alert(`${added}件のレースを登録しました！`);
+    else alert('新しく追加できるレースはありませんでした');
+}
+
+/** スケジュールから1件削除 */
+function removeFromSchedule(idx) {
+    g1Schedule.splice(idx, 1);
+    saveSchedule();
+    renderScheduleInSettings();
+    renderScheduleChips();
+}
+
+/** スケジュールを全削除 */
+function clearSchedule() {
+    if (!confirm(`スケジュール（${g1Schedule.length}件）を全て削除しますか？`)) return;
+    g1Schedule = [];
+    saveSchedule();
+    renderScheduleInSettings();
+    renderScheduleChips();
+}
+
+/** 設定タブ内のスケジュール一覧を描画 */
+function renderScheduleInSettings() {
+    const wrap  = document.getElementById('currentScheduleWrap');
+    const list  = document.getElementById('currentScheduleList');
+    const count = document.getElementById('scheduleCount');
+
+    if (g1Schedule.length === 0) {
+        wrap.style.display = 'none';
+        return;
+    }
+    wrap.style.display = '';
+    count.textContent  = g1Schedule.length;
+    list.innerHTML = g1Schedule.map((name, i) => `
+        <div class="schedule-list-item">
+            <span>${escH(name)}</span>
+            <button onclick="removeFromSchedule(${i})" title="削除">✕</button>
+        </div>
+    `).join('');
+}
+
+/** レース入力タブのスケジュールチップを描画 */
+function renderScheduleChips() {
+    const wrap  = document.getElementById('scheduleChipsWrap');
+    const chips = document.getElementById('scheduleChips');
+    if (!wrap || !chips) return;
+
+    if (g1Schedule.length === 0) {
+        wrap.style.display = 'none';
+        return;
+    }
+    wrap.style.display = '';
+    chips.innerHTML = g1Schedule.map(name => `
+        <div class="schedule-chip" onclick="fillRaceName('${esc(name)}')">${escH(name)}</div>
+    `).join('');
+}
+
+/** チップタップでレース名フィールドに入力 */
+function fillRaceName(name) {
+    document.getElementById('raceName').value = name;
+    // タップしたチップをハイライト
+    document.querySelectorAll('.schedule-chip').forEach(c => {
+        c.classList.toggle('used', c.textContent.trim() === name);
+    });
+}
+
+/** ローディング表示切替 */
+function setScheduleLoading(on) {
+    document.getElementById('scheduleLoading').style.display = on ? '' : 'none';
+    document.getElementById('btnWiki').disabled = on;
+}
+
+/** 設定タブを開いたときに Wikipedia 対象ラベルを更新 */
+function updateWikiTargetLabel() {
+    const el = document.getElementById('wikiTargetLabel');
+    if (el) el.textContent = `${tournamentSettings.year}年の競馬`;
+}
+
+// ============================================================
+//  馬名プリセット管理
+// ============================================================
+
+function saveHorses() {
+    saveToFirestore({ horses: horsePresets });
+}
+
+// ============================================================
+//  URL から出走馬を自動取込
+// ============================================================
+
+// 確認パネル用の選択状態
+let horseCandidates = []; // { name, selected }
+
+function importHorsesFromText() {
+    const text     = document.getElementById('horseImportText').value;
+    const statusEl = document.getElementById('pasteImportStatus');
+    if (!text.trim()) return;
+
+    // カタカナ3〜16文字を抽出し、出現回数をカウント
+    const kata = /[ァ-ヶーｦ-ﾟ]{3,16}/g;
+    const matches = text.match(kata) || [];
+    const freq = {};
+    matches.forEach(m => { freq[m] = (freq[m] || 0) + 1; });
+
+    // 重複除去（出現頻度降順でソート）
+    const unique = Object.keys(freq).sort((a, b) => freq[b] - freq[a]);
+
+    if (unique.length === 0) {
+        statusEl.innerHTML = '<span style="color:#e74c3c">⚠️ カタカナ文字列が見つかりませんでした</span>';
+        return;
+    }
+
+    horseCandidates = unique.map(name => ({ name, selected: true }));
+    statusEl.innerHTML = `<span style="color:#aac">${unique.length}件を検出。不要なものをタップして除外してください。</span>`;
+    renderCandidateTags();
+    document.getElementById('horseConfirmPanel').style.display = '';
+}
+
+function renderCandidateTags() {
+    const el = document.getElementById('horseCandidateTags');
+    el.innerHTML = horseCandidates.map((c, i) =>
+        `<span class="preset-tag" onclick="toggleCandidate(${i})"
+              style="opacity:${c.selected ? '1' : '0.3'}; text-decoration:${c.selected ? 'none' : 'line-through'};"
+              >${escH(c.name)}</span>`
+    ).join('');
+}
+
+function toggleCandidate(i) {
+    horseCandidates[i].selected = !horseCandidates[i].selected;
+    renderCandidateTags();
+}
+
+function selectAllCandidates(val) {
+    horseCandidates.forEach(c => c.selected = val);
+    renderCandidateTags();
+}
+
+function confirmHorseImport() {
+    const chosen = horseCandidates.filter(c => c.selected).map(c => c.name);
+    if (chosen.length === 0) { alert('1頭以上選択してください'); return; }
+    horsePresets = chosen;
+    saveHorses();
+    renderPresetList();
+    renderHorseSelectors();
+    document.getElementById('horseImportText').value = '';
+    document.getElementById('pasteImportStatus').innerHTML = `<span style="color:#27ae60">✅ ${chosen.length}頭を登録しました</span>`;
+    document.getElementById('horseConfirmPanel').style.display = 'none';
+    horseCandidates = [];
+}
+
+function clearPastePanel() {
+    document.getElementById('horseImportText').value = '';
+    document.getElementById('pasteImportStatus').innerHTML = '';
+    document.getElementById('horseConfirmPanel').style.display = 'none';
+    horseCandidates = [];
+}
+
+
+function addHorsePreset() {
+    const input = document.getElementById('newHorseName');
+    const name = input.value.trim();
+    if (!name) return;
+    if (horsePresets.includes(name)) { alert('この馬名は既に登録されています'); return; }
+    horsePresets.push(name);
+    saveHorses();
+    input.value = '';
+    renderPresetList();
+    renderHorseSelectors(); // セレクト更新
+}
+
+function removeHorsePreset(name) {
+    if (!confirm(`「${name}」をプリセットから削除しますか？`)) return;
+    horsePresets = horsePresets.filter(h => h !== name);
+    saveHorses();
+    renderPresetList();
+    renderHorseSelectors();
+}
+
+function renderPresetList() {
+    const el = document.getElementById('presetList');
+    if (horsePresets.length === 0) {
+        el.innerHTML = '<span class="text-muted">プリセットなし</span>';
+        return;
+    }
+    el.innerHTML = horsePresets.map(h =>
+        `<span class="preset-tag" onclick="removeHorsePreset('${esc(h)}')" title="タップで削除">${escH(h)}</span>`
+    ).join('');
+}
+
+// ============================================================
+//  馬選択セレクタ生成
+// ============================================================
+
+function renderHorseSelectors() {
+    ['A','B','C'].forEach(p => {
+        const wrap = document.getElementById(`horses${p}`);
+        wrap.innerHTML = '';
+        for (let i = 1; i <= 3; i++) {
+            const options = horsePresets.map(h =>
+                `<option value="${escH(h)}">${escH(h)}</option>`
+            ).join('');
+
+            const row = document.createElement('div');
+            row.className = 'horse-row';
+            row.innerHTML = `
+                <div>
+                    <label>第${i}頭目</label>
+                    <select id="horse${p}${i}">
+                        <option value="">-- 選択してください --</option>
+                        ${options}
+                        <option value="__custom__">手入力...</option>
+                    </select>
+                </div>
+                <div>
+                    <label>手入力（任意）</label>
+                    <input type="text" id="custom${p}${i}"
+                           placeholder="馬名を直接入力"
+                           style="display:none;" />
+                </div>
+            `;
+            wrap.appendChild(row);
+
+            // セレクト変更ハンドラ（closureで i,p を捕捉）
+            const sel    = document.getElementById(`horse${p}${i}`);
+            const custom = document.getElementById(`custom${p}${i}`);
+            sel.addEventListener('change', () => {
+                if (sel.value === '__custom__') {
+                    custom.style.display = '';
+                    custom.focus();
+                } else {
+                    custom.style.display = 'none';
+                    custom.value = '';
+                }
+                updateResultsInput();
+            });
+            custom.addEventListener('input', updateResultsInput);
+        }
+    });
+    updateResultsInput();
+}
+
+/** 選択済み馬名を取得（手入力優先） */
+function getHorseName(p, i) {
+    const sel = document.getElementById(`horse${p}${i}`);
+    if (!sel) return '';
+    if (sel.value === '__custom__') {
+        return (document.getElementById(`custom${p}${i}`) || {}).value?.trim() || '';
+    }
+    return sel.value;
+}
+
+// ============================================================
+//  着順入力UI（馬選択に連動して更新）
+// ============================================================
+
+function updateResultsInput() {
+    const container = document.getElementById('resultsInput');
+    const seen = new Set();
+    const horses = [];
+
+    ['A','B','C'].forEach(p => {
+        for (let i = 1; i <= 3; i++) {
+            const name = getHorseName(p, i);
+            if (name && !seen.has(name)) {
+                seen.add(name);
+                horses.push(name);
+            }
+        }
+    });
+
+    if (horses.length === 0) {
+        container.innerHTML = '<p class="text-muted">↑ まず馬を選択してください</p>';
+        return;
+    }
+
+    container.innerHTML = horses.map(h => {
+        const sid = toSafeId(h);
+        const opts = Array.from({length: 20}, (_, k) =>
+            `<option value="${k+1}">${k+1}着</option>`
+        ).join('');
+        return `
+            <div class="result-row">
+                <div class="horse-label">${escH(h)}</div>
+                <select id="res_${sid}">
+                    <option value="">着順を選択</option>
+                    ${opts}
+                </select>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================================
+//  着順ポイント計算ルール
+//  1着=5pt / 2着=4pt / 3着=3pt / 4着=2pt / 5着=1pt
+//  最下位=−3pt / その他=0pt
+// ============================================================
+
+function placementPt(rank, totalHorses) {
+    if (rank === 1) return  5;
+    if (rank === 2) return  4;
+    if (rank === 3) return  3;
+    if (rank === 4) return  2;
+    if (rank === 5) return  1;
+    if (rank === totalHorses) return -3;
+    return 0;
+}
+
+// ============================================================
+//  結果計算メイン
+// ============================================================
+
+function calculateResults() {
+    // --- プレイヤー名 ---
+    const nameA = document.getElementById('nameA').value.trim() || 'プレイヤーA';
+    const nameB = document.getElementById('nameB').value.trim() || 'プレイヤーB';
+    const nameC = document.getElementById('nameC').value.trim() || 'プレイヤーC';
+    const pname = { A: nameA, B: nameB, C: nameC };
+    // 設定にも反映（フォームで変更された場合に追随）
+    tournamentSettings.names = { A: nameA, B: nameB, C: nameC };
+    persistSettings();
+
+    const raceName    = document.getElementById('raceName').value.trim()    || '未名レース';
+
+    const totalHorses = parseInt(document.getElementById('totalHorses').value) || 18;
+
+    // --- 馬と着順を収集 ---
+    const players = {};
+    for (const p of ['A','B','C']) {
+        const horses = [];
+        for (let i = 1; i <= 3; i++) {
+            const name = getHorseName(p, i);
+            if (!name) {
+                alert(`${pname[p]}の第${i}頭目の馬が選択されていません`);
+                return;
+            }
+            const sid = toSafeId(name);
+            const el  = document.getElementById(`res_${sid}`);
+            const rank = el ? parseInt(el.value) : NaN;
+            if (!rank || rank < 1) {
+                alert(`「${name}」の着順が入力されていません`);
+                return;
+            }
+            if (rank > totalHorses) {
+                alert(`「${name}」の着順(${rank}着)が出走頭数(${totalHorses}頭)を超えています`);
+                return;
+            }
+            horses.push({ name, rank, pt: placementPt(rank, totalHorses) });
+        }
+        const total = horses.reduce((s, h) => s + h.pt, 0);
+        players[p] = { name: pname[p], horses, total };
+    }
+
+    // --- 勝者判定 ---
+    const maxPt  = Math.max(players.A.total, players.B.total, players.C.total);
+    const winners = ['A','B','C'].filter(p => players[p].total === maxPt);
+    const losers  = ['A','B','C'].filter(p => players[p].total !== maxPt);
+
+    // --- 勝利ポイント ---
+    // 勝者1名 → +2000pt（他2名から各1000pt）
+    // 勝者2名 → 各+1000pt（残り1名から各1000pt = −2000pt）
+    // 全員同点 → ±0
+    const victoryPts = { A: 0, B: 0, C: 0 };
+    if (winners.length === 1) {
+        victoryPts[winners[0]] = 2000;
+        losers.forEach(l => { victoryPts[l] = -1000; });
+    } else if (winners.length === 2) {
+        winners.forEach(w => { victoryPts[w] = 1000; });
+        victoryPts[losers[0]] = -2000;
+    }
+
+    // --- 結果オブジェクト ---
+    currentResult = {
+        id: Date.now().toString(),
+        raceName, totalHorses,
+        // 大会設定からシーズンキー（例："2025春"）を付与
+        seasonKey: toSeasonKey(tournamentSettings.year, tournamentSettings.season),
+        players, winners, victoryPts,
+        savedAt: new Date().toISOString()
+    };
+
+    renderResultCard(currentResult, document.getElementById('resultContent'));
+    document.getElementById('resultDisplay').style.display = '';
+    document.getElementById('resultDisplay').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ============================================================
+//  結果HTMLを描画（メイン画面 / モーダル共用）
+// ============================================================
+
+function renderResultCard(result, container) {
+    const { players, winners, victoryPts, totalHorses } = result;
+
+    let html = '';
+
+    // 勝者バナー
+    if (winners.length === 3) {
+        html += `<div class="winner-banner"><div class="crown">🤝</div><h3>3人同点引き分け！</h3></div>`;
+    } else {
+        const wNames = winners.map(w => players[w].name).join(' & ');
+        html += `<div class="winner-banner"><div class="crown">👑</div><h3>勝者：${escH(wNames)}</h3></div>`;
+    }
+
+    // サブ情報
+    html += `<p class="text-muted" style="margin-bottom:8px;">${totalHorses}頭立て</p>`;
+
+    // 3人のポイントボックス
+    html += '<div class="pts-display">';
+    ['A','B','C'].forEach(p => {
+        const isW  = winners.includes(p);
+        const vp   = victoryPts[p];
+        const vcls = vp > 0 ? 'vpts-gain' : vp < 0 ? 'vpts-loss' : '';
+        const vtxt = vp > 0 ? `+${vp}pt` : vp < 0 ? `${vp}pt` : '±0pt';
+        html += `
+            <div class="pts-box${isW ? ' winner' : ''}">
+                <div class="pname">${escH(players[p].name)}</div>
+                <div class="ppls">${players[p].total}pt</div>
+                <div class="pvpts ${vcls}">${vtxt}</div>
+                ${isW ? '<div style="font-size:0.7rem;color:#ffd700;margin-top:2px;">👑 勝利</div>' : ''}
+            </div>
+        `;
+    });
+    html += '</div>';
+
+    // 全馬を着順でソートしてテーブル表示
+    const allHorses = [];
+    ['A','B','C'].forEach(p => {
+        players[p].horses.forEach(h => allHorses.push({ ...h, player: p }));
+    });
+    allHorses.sort((a, b) => a.rank - b.rank);
+
+    const badgeColors = { A: '#e74c3c', B: '#3498db', C: '#27ae60' };
+    html += `
+        <table class="result-table">
+            <thead>
+                <tr>
+                    <th>馬名</th><th>着順</th><th>着順pt</th><th>選択者</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    allHorses.forEach(h => {
+        const ptCls = h.pt > 0 ? 'pt-pos' : h.pt < 0 ? 'pt-neg' : '';
+        const ptTxt = h.pt > 0 ? `+${h.pt}` : `${h.pt}`;
+        html += `
+            <tr>
+                <td style="text-align:left;">${escH(h.name)}</td>
+                <td>${h.rank}着${h.rank === totalHorses ? '🔻' : ''}</td>
+                <td class="${ptCls}">${ptTxt}</td>
+                <td>
+                    <span class="player-inline-badge"
+                          style="background:${badgeColors[h.player]};color:#fff;">
+                        ${h.player}
+                    </span>
+                    ${escH(players[h.player].name)}
+                </td>
+            </tr>
+        `;
+    });
+    html += '</tbody></table>';
+
+    // 各プレイヤー別内訳
+    html += '<hr class="divider"><p style="font-size:0.83rem;color:#87ceeb;margin-bottom:8px;">📋 プレイヤー別内訳</p>';
+    ['A','B','C'].forEach(p => {
+        const pl  = players[p];
+        const isW = winners.includes(p);
+        const bc  = badgeColors[p];
+        const horseSummary = pl.horses.map(h => {
+            const ptStr = h.pt > 0 ? `<span class="pt-pos">+${h.pt}</span>`
+                        : h.pt < 0 ? `<span class="pt-neg">${h.pt}</span>`
+                        : `<span style="color:#888;">0</span>`;
+            return `${escH(h.name)}(${h.rank}着/${ptStr}pt)`;
+        }).join('　');
+
+        const vp  = victoryPts[p];
+        const vtxt = vp > 0 ? `<span class="vpts-gain">+${vp}</span>`
+                   : vp < 0 ? `<span class="vpts-loss">${vp}</span>`
+                   : '<span style="color:#888;">±0</span>';
+
+        html += `
+            <div style="margin-bottom:8px;padding:10px;background:#0f3460;
+                        border-radius:6px;border-left:3px solid ${bc};">
+                <div style="font-weight:bold;font-size:0.9rem;margin-bottom:5px;">
+                    ${escH(pl.name)}${isW ? '<span class="badge-winner">勝者</span>' : ''}
+                </div>
+                <div style="font-size:0.8rem;color:#ccc;line-height:1.8;">${horseSummary}</div>
+                <div style="margin-top:6px;font-size:0.88rem;">
+                    着順pt合計: <strong style="color:#ffd700;">${pl.total}pt</strong>
+                    ／ 勝利pt: ${vtxt}pt
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+// ============================================================
+//  レース保存
+// ============================================================
+
+function saveRace() {
+    if (!currentResult) return;
+    if (races.find(r => r.id === currentResult.id)) {
+        alert('このレースは既に保存されています'); return;
+    }
+    races.push(currentResult);
+    saveToFirestore({ races });
+    updateSeasonFilterOptions(); // 新シーズンが増えた場合にドロップダウン更新
+    renderHistory();
+    renderRanking();
+    alert(`「${currentResult.raceName}」を保存しました！`);
+    currentResult = null;
+    resetForm();
+    showTab('seiseki');
+}
+
+function persistRaces() {
+    saveToFirestore({ races });
+}
+
+// ============================================================
+//  フォームリセット
+// ============================================================
+
+function resetForm() {
+    document.getElementById('raceName').value   = '';
+
+    document.getElementById('totalHorses').value = '18';
+    renderHorseSelectors();
+    document.getElementById('resultDisplay').style.display = 'none';
+    currentResult = null;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+//  履歴表示
+// ============================================================
+
+function renderHistory() {
+    const el = document.getElementById('historyList');
+
+    // フィルター値を取得
+    const filterSel = document.getElementById('historyFilter');
+    const filterVal = filterSel ? filterSel.value : 'all';
+
+    // フィルタリング
+    const filtered = filterVal === 'all'
+        ? races
+        : races.filter(r => r.seasonKey === filterVal);
+
+    if (filtered.length === 0) {
+        el.innerHTML = '<p class="text-muted text-center" style="padding:20px;">該当するレース履歴がありません</p>';
+        return;
+    }
+
+    el.innerHTML = filtered.slice().reverse().map(race => {
+        const wNames = race.winners.map(w => race.players[w].name).join(' & ');
+        const scores = ['A','B','C']
+            .map(p => `${race.players[p].name}: ${race.players[p].total}pt`)
+            .join(' ／ ');
+        // シーズンバッジ
+        const sk = race.seasonKey || '';
+        const isHaru = sk.endsWith('春');
+        const badgeCls = isHaru ? 'badge-haru' : 'badge-aki';
+        const badge = sk
+            ? `<span class="season-badge ${badgeCls}">${escH(sk)}</span>`
+            : '';
+        return `
+            <div class="race-card" onclick="showRaceDetail('${race.id}')">
+                <div class="rc-title">${badge}🏇 ${escH(race.raceName)}</div>
+                <div class="rc-meta">${race.totalHorses}頭立て</div>
+                <div class="rc-winner">👑 勝者: ${escH(wNames)}</div>
+                <div class="rc-meta" style="margin-top:4px;">${scores}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================================
+//  レース詳細モーダル
+// ============================================================
+
+function showRaceDetail(id) {
+    const race = races.find(r => r.id === id);
+    if (!race) return;
+    selectedRaceId = id;
+    document.getElementById('modalTitle').textContent = `🏇 ${race.raceName}`;
+    renderResultCard(race, document.getElementById('modalContent'));
+    document.getElementById('raceModal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('raceModal').classList.remove('open');
+    selectedRaceId = null;
+}
+
+function handleModalClick(e) {
+    // モーダル外（オーバーレイ）クリックで閉じる
+    if (e.target === document.getElementById('raceModal')) closeModal();
+}
+
+function enterEditMode() {
+    const race = races.find(r => r.id === selectedRaceId);
+    if (!race) return;
+
+    const playerLabels = { A: 'A', B: 'B', C: 'C' };
+    let formHtml = `
+        <div style="margin-bottom:10px;">
+            <label style="font-size:0.8rem; color:#aac;">出走頭数</label>
+            <input type="number" id="edit_totalHorses" value="${race.totalHorses}"
+                   min="3" max="28" style="width:70px; margin-left:8px;">
+        </div>
+    `;
+
+    ['A','B','C'].forEach(p => {
+        const pl = race.players[p];
+        formHtml += `
+            <div style="margin-bottom:12px; padding:10px; background:#1a2744; border-radius:8px;">
+                <div style="font-weight:bold; margin-bottom:6px; color:#ffd700;">
+                    ${playerLabels[p]}：${escH(pl.name)}
+                </div>
+        `;
+        pl.horses.forEach((h, i) => {
+            formHtml += `
+                <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
+                    <span style="font-size:0.75rem; color:#aac; min-width:32px;">第${i+1}頭</span>
+                    <input type="text" id="edit_name_${p}_${i}" value="${escH(h.name)}"
+                           style="flex:1; font-size:0.82rem;" placeholder="馬名">
+                    <input type="number" id="edit_rank_${p}_${i}" value="${h.rank}"
+                           min="1" max="28" style="width:52px; font-size:0.82rem;" placeholder="着順">
+                    <span style="font-size:0.75rem; color:#aac;">着</span>
+                </div>
+            `;
+        });
+        formHtml += `</div>`;
+    });
+
+    document.getElementById('modalContent').innerHTML = formHtml;
+    document.getElementById('modalFooter').innerHTML = `
+        <button class="btn btn-primary"   onclick="saveRaceEdit()" style="flex:1;">💾 保存</button>
+        <button class="btn btn-secondary" onclick="cancelEditMode()" style="flex:1;">キャンセル</button>
+    `;
+}
+
+function cancelEditMode() {
+    const race = races.find(r => r.id === selectedRaceId);
+    if (!race) return;
+    renderResultCard(race, document.getElementById('modalContent'));
+    document.getElementById('modalFooter').innerHTML = `
+        <button class="btn btn-danger"    onclick="deleteRace()"   style="flex:1;">🗑️ 削除</button>
+        <button class="btn btn-secondary" onclick="enterEditMode()" style="flex:1;">✏️ 編集</button>
+        <button class="btn btn-secondary" onclick="closeModal()"   style="flex:1;">閉じる</button>
+    `;
+}
+
+function saveRaceEdit() {
+    const race = races.find(r => r.id === selectedRaceId);
+    if (!race) return;
+
+    const newTotal = parseInt(document.getElementById('edit_totalHorses').value, 10);
+    if (isNaN(newTotal) || newTotal < 3 || newTotal > 28) {
+        alert('出走頭数は3〜28で入力してください'); return;
+    }
+
+    // 入力値を読み取り・バリデーション
+    for (const p of ['A','B','C']) {
+        for (let i = 0; i < 3; i++) {
+            const name = document.getElementById(`edit_name_${p}_${i}`).value.trim();
+            const rank = parseInt(document.getElementById(`edit_rank_${p}_${i}`).value, 10);
+            if (!name) { alert(`${race.players[p].name}の第${i+1}頭目の馬名を入力してください`); return; }
+            if (isNaN(rank) || rank < 1) { alert(`${name}の着順を入力してください`); return; }
+            if (rank > newTotal) { alert(`「${name}」の着順(${rank}着)が出走頭数(${newTotal}頭)を超えています`); return; }
+        }
+    }
+
+    // データ更新＆ポイント再計算
+    race.totalHorses = newTotal;
+    ['A','B','C'].forEach(p => {
+        race.players[p].horses = [0,1,2].map(i => {
+            const name = document.getElementById(`edit_name_${p}_${i}`).value.trim();
+            const rank = parseInt(document.getElementById(`edit_rank_${p}_${i}`).value, 10);
+            return { name, rank, pt: placementPt(rank, newTotal) };
+        });
+        race.players[p].total = race.players[p].horses.reduce((s, h) => s + h.pt, 0);
+    });
+
+    // 勝者・勝利pt再計算
+    const totals = { A: race.players.A.total, B: race.players.B.total, C: race.players.C.total };
+    const maxPt  = Math.max(...Object.values(totals));
+    race.winners  = ['A','B','C'].filter(p => totals[p] === maxPt);
+    const losers  = ['A','B','C'].filter(p => totals[p] !== maxPt);
+    race.victoryPts = { A: 0, B: 0, C: 0 };
+    if (race.winners.length === 1) {
+        race.victoryPts[race.winners[0]] = 2000;
+        losers.forEach(p => { race.victoryPts[p] = -1000; });
+    } else if (race.winners.length === 2) {
+        race.winners.forEach(p => { race.victoryPts[p] = 1000; });
+        losers.forEach(p => { race.victoryPts[p] = -2000; });
+    }
+
+    persistRaces();
+    renderHistory();
+    renderRanking();
+    cancelEditMode();
+}
+
+function deleteRace() {
+    if (!selectedRaceId) return;
+    const race = races.find(r => r.id === selectedRaceId);
+    if (!race) return;
+    if (!confirm(`「${race.raceName}」を削除しますか？\nこの操作は取り消せません。`)) return;
+    races = races.filter(r => r.id !== selectedRaceId);
+    persistRaces();
+    renderHistory();
+    renderRanking();
+    closeModal();
+}
+
+// ============================================================
+//  ランキング表示
+// ============================================================
+
+function renderRanking() {
+    const el = document.getElementById('rankingList');
+
+    if (races.length === 0) {
+        el.innerHTML = '<p class="text-muted text-center" style="padding:20px;">該当データがありません</p>';
+        return;
+    }
+
+    // 全プレイヤーの累計集計
+    const pm = {};
+    races.forEach(race => {
+        ['A','B','C'].forEach(p => {
+            const name = race.players[p].name;
+            if (!pm[name]) pm[name] = { name, victoryPts: 0, wins: 0, races: 0 };
+            pm[name].victoryPts += race.victoryPts[p];
+            pm[name].races++;
+            if (race.winners.includes(p)) pm[name].wins++;
+        });
+    });
+
+    const sorted = Object.values(pm).sort((a, b) => b.victoryPts - a.victoryPts);
+
+    // 同点は同順位
+    const rankMedals = ['🥇','🥈','🥉'];
+    let rankNum = 0, prevPts = null;
+    const rows = sorted.map((p, i) => {
+        if (p.victoryPts !== prevPts) { rankNum = i + 1; prevPts = p.victoryPts; }
+        const medal = rankMedals[rankNum - 1] || rankNum;
+        const vcls  = p.victoryPts > 0 ? 'pt-pos' : p.victoryPts < 0 ? 'pt-neg' : '';
+        const vtxt  = p.victoryPts > 0 ? `+${p.victoryPts}` : `${p.victoryPts}`;
+        return `<tr>
+            <td style="text-align:center; font-size:1.1rem;">${medal}</td>
+            <td style="text-align:left; font-weight:bold;">${escH(p.name)}</td>
+            <td class="${vcls}">${vtxt}</td>
+            <td>${p.wins}</td>
+            <td>${p.races}</td>
+        </tr>`;
+    }).join('');
+
+    el.innerHTML = `
+        <table class="result-table">
+            <thead>
+                <tr>
+                    <th>順位</th>
+                    <th style="text-align:left;">名前</th>
+                    <th>勝利pt</th>
+                    <th>勝数</th>
+                    <th>参加</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>
+    `;
+}
+
+// ============================================================
+//  JSONエクスポート / インポート
+// ============================================================
+
+function exportJSON() {
+    if (races.length === 0) { alert('エクスポートするデータがありません'); return; }
+    const data = {
+        exportedAt: new Date().toISOString(),
+        version: '1.2',
+        tournamentSettings,
+        g1Schedule,
+        races,
+        horsePresets
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `g1_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function handleImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (!data.races || !Array.isArray(data.races)) {
+                alert('無効なJSONファイルです'); return;
+            }
+            const existingIds = new Set(races.map(r => r.id));
+            const newRaces    = data.races.filter(r => !existingIds.has(r.id));
+            if (!confirm(`${data.races.length}件のレース（うち新規${newRaces.length}件）をインポートします。続けますか？`)) return;
+            races.push(...newRaces);
+            if (Array.isArray(data.horsePresets)) {
+                data.horsePresets.forEach(h => {
+                    if (!horsePresets.includes(h)) horsePresets.push(h);
+                });
+                saveHorses();
+                renderPresetList();
+                renderHorseSelectors();
+            }
+            // 大会設定もインポート（存在する場合）
+            if (data.tournamentSettings) {
+                tournamentSettings = { ...tournamentSettings, ...data.tournamentSettings };
+                persistSettings();
+                applySettingsToUI();
+                applyNamesToRaceForm();
+            }
+            // G1スケジュールもインポート
+            if (Array.isArray(data.g1Schedule)) {
+                data.g1Schedule.forEach(n => { if (!g1Schedule.includes(n)) g1Schedule.push(n); });
+                saveSchedule();
+                renderScheduleChips();
+                renderScheduleInSettings();
+            }
+            persistRaces();
+            updateSeasonFilterOptions();
+            renderHistory();
+            renderRanking();
+            alert(`${newRaces.length}件の新規レースを追加しました`);
+        } catch {
+            alert('JSONの解析に失敗しました。ファイルを確認してください');
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // 同じファイルの再選択を可能にする
+}
+
+// ============================================================
+//  タブ切り替え
+// ============================================================
+
+function showTab(tab) {
+    const tabs   = ['race','seiseki','settings'];
+    const tabEls = document.querySelectorAll('.tab');
+    tabEls.forEach((t, i) => t.classList.toggle('active', tabs[i] === tab));
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    if (tab === 'seiseki') { renderRanking(); renderHistory(); }
+    if (tab === 'settings') {
+        populateSettingsForm();
+        applySettingsToUI();
+        renderScheduleInSettings();
+        updateWikiTargetLabel();
+    }
+    // レース入力タブを開くときは設定から参加者名＋スケジュールチップを反映
+    if (tab === 'race') {
+        applyNamesToRaceForm();
+        renderScheduleChips();
+    }
+}
+
+// ============================================================
+//  ユーティリティ
+// ============================================================
+
+/** HTML属性用エスケープ（シングルクオート） */
+function esc(str) {
+    return String(str).replace(/'/g, "\\'");
+}
+
+/** HTML表示用エスケープ */
+function escH(str) {
+    return String(str).replace(/[&<>"']/g, c => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    })[c]);
+}
+
+/** セレクトID用（特殊文字を_に置換） */
+function toSafeId(str) {
+    return String(str).replace(/[^a-zA-Z0-9\u3041-\u9fff]/g, '_');
+}
+
+// ============================================================
+//  起動
+// ============================================================
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マルコメ杯</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif;
+            background: #f0f4f0;
+            color: #222;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ヘッダーロゴ */
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .logo-badge {
+            display: inline-block;
+            background: #006633;
+            color: #fff;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            padding: 4px 16px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+        }
+        .logo h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #006633;
+            letter-spacing: 0.08em;
+        }
+        .logo .divider {
+            width: 48px;
+            height: 3px;
+            background: #006633;
+            margin: 12px auto 0;
+            border-radius: 2px;
+        }
+
+        /* メニュー */
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+        }
+
+        .menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-decoration: none;
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px 22px;
+            border: 1px solid #d4e8d4;
+            box-shadow: 0 2px 8px rgba(0,102,51,0.08);
+            transition: all 0.2s;
+        }
+        .menu-btn:hover {
+            border-color: #006633;
+            box-shadow: 0 4px 16px rgba(0,102,51,0.15);
+            transform: translateY(-2px);
+        }
+
+        .menu-btn .icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+        .menu-btn .text { flex: 1; }
+        .menu-btn .title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #006633;
+        }
+        .menu-btn .arrow {
+            font-size: 1.1rem;
+            color: #006633;
+            opacity: 0.5;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .menu-btn:hover .arrow {
+            opacity: 1;
+            transform: translateX(3px);
+        }
+
+        footer {
+            margin-top: 40px;
+            font-size: 0.72rem;
+            color: #999;
+            letter-spacing: 0.08em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <div class="logo-badge">🏇 MARUKOME CUP</div>
+            <h1>マルコメ杯</h1>
+            <div class="divider"></div>
+        </div>
+
+        <div class="menu">
+            <a href="santozanmai.html" class="menu-btn">
+                <div class="icon">🎯</div>
+                <div class="text">
+                    <div class="title">G1 三頭勝負</div>
+                </div>
+                <div class="arrow">›</div>
+            </a>
+            <a href="pog.html" class="menu-btn">
+                <div class="icon">🐴</div>
+                <div class="text">
+                    <div class="title">POG</div>
+                </div>
+                <div class="arrow">›</div>
+            </a>
+        </div>
+
+        <footer>© 2026 MARUKOME CUP</footer>
+    </div>
+</body>
+</html>
