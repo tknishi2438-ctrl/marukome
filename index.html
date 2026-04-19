@@ -5,137 +5,202 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>マルコメ杯</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&display=swap');
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif;
-            background: #f0f4f0;
-            color: #222;
+            font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+            background: #2a1a0a;
+            color: #2a1a0a;
             min-height: 100vh;
+        }
+
+        /* 背景テクスチャ */
+        .page-wrap {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at top, #5c3a1e 0%, #2a1a0a 60%);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 32px 20px;
+            padding: 0 0 40px;
         }
 
-        .container {
+        /* ヒーロー画像 */
+        .hero {
             width: 100%;
-            max-width: 420px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            max-width: 680px;
+            position: relative;
         }
-
-        /* ヘッダーロゴ */
-        .logo {
+        .hero img {
+            width: 100%;
+            display: block;
+            border-bottom: 4px solid #c8a050;
+        }
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60%;
+            background: linear-gradient(to top, rgba(42,26,10,0.85) 0%, transparent 100%);
+        }
+        .hero-title {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
             text-align: center;
-            margin-bottom: 40px;
         }
-        .logo-badge {
+        .hero-title .badge {
             display: inline-block;
-            background: #006633;
-            color: #fff;
-            font-size: 0.7rem;
-            letter-spacing: 0.15em;
-            padding: 4px 16px;
-            border-radius: 20px;
-            margin-bottom: 14px;
+            background: #c8a050;
+            color: #2a1a0a;
+            font-size: 0.65rem;
+            letter-spacing: 0.25em;
+            padding: 3px 16px;
+            border-radius: 0;
+            margin-bottom: 8px;
+            font-weight: 700;
         }
-        .logo h1 {
-            font-size: 2rem;
+        .hero-title h1 {
+            font-size: 2.4rem;
             font-weight: 900;
-            color: #006633;
-            letter-spacing: 0.08em;
+            color: #fff;
+            letter-spacing: 0.12em;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+            line-height: 1;
         }
-        .logo .divider {
-            width: 48px;
-            height: 3px;
-            background: #006633;
-            margin: 12px auto 0;
-            border-radius: 2px;
+        .hero-title .subtitle {
+            font-size: 0.8rem;
+            color: #c8a050;
+            letter-spacing: 0.2em;
+            margin-top: 6px;
         }
 
         /* メニュー */
         .menu {
+            width: 100%;
+            max-width: 680px;
+            padding: 28px 20px 0;
             display: flex;
             flex-direction: column;
             gap: 14px;
-            width: 100%;
         }
 
         .menu-btn {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 18px;
             text-decoration: none;
-            background: #fff;
-            border-radius: 10px;
-            padding: 20px 22px;
-            border: 1px solid #d4e8d4;
-            box-shadow: 0 2px 8px rgba(0,102,51,0.08);
-            transition: all 0.2s;
+            background: linear-gradient(135deg, #f5e6c8 0%, #e8d4a0 100%);
+            border-radius: 4px;
+            padding: 20px 24px;
+            border: 2px solid #c8a050;
+            box-shadow: 4px 4px 0 #8b5e1e, 0 6px 20px rgba(0,0,0,0.4);
+            transition: all 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+        .menu-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #c8a050, #f0c060, #c8a050);
         }
         .menu-btn:hover {
-            border-color: #006633;
-            box-shadow: 0 4px 16px rgba(0,102,51,0.15);
-            transform: translateY(-2px);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 #8b5e1e, 0 8px 24px rgba(0,0,0,0.5);
+        }
+        .menu-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 #8b5e1e;
         }
 
         .menu-btn .icon {
-            font-size: 2rem;
+            font-size: 2.2rem;
             flex-shrink: 0;
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.2));
         }
         .menu-btn .text { flex: 1; }
         .menu-btn .title {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: #006633;
+            font-size: 1.15rem;
+            font-weight: 900;
+            color: #5c3a1e;
+            letter-spacing: 0.08em;
+        }
+        .menu-btn .desc {
+            font-size: 0.72rem;
+            color: #8b6030;
+            margin-top: 3px;
+            letter-spacing: 0.05em;
+            font-family: sans-serif;
         }
         .menu-btn .arrow {
-            font-size: 1.1rem;
-            color: #006633;
-            opacity: 0.5;
-            transition: opacity 0.2s, transform 0.2s;
-        }
-        .menu-btn:hover .arrow {
-            opacity: 1;
-            transform: translateX(3px);
+            font-size: 1.5rem;
+            color: #c8a050;
+            font-weight: 900;
         }
 
         footer {
-            margin-top: 40px;
-            font-size: 0.72rem;
-            color: #999;
-            letter-spacing: 0.08em;
+            margin-top: 36px;
+            font-size: 0.68rem;
+            color: #8b6030;
+            letter-spacing: 0.15em;
+            text-align: center;
+            font-family: sans-serif;
+        }
+
+        /* 区切り線 */
+        .divider {
+            width: 100%;
+            max-width: 680px;
+            padding: 0 20px;
+            margin-top: 28px;
+        }
+        .divider-line {
+            border: none;
+            border-top: 1px solid #5c3a1e;
+            opacity: 0.5;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">
-            <div class="logo-badge">🏇 MARUKOME CUP</div>
+<div class="page-wrap">
+
+    <div class="hero">
+        <img src="marukomecup_top.png" alt="マルコメ杯">
+        <div class="hero-overlay"></div>
+        <div class="hero-title">
+            <div class="badge">🏇 MARUKOME CUP</div>
             <h1>マルコメ杯</h1>
-            <div class="divider"></div>
+            <div class="subtitle">週末は馬と生きる。</div>
         </div>
-
-        <div class="menu">
-            <a href="santozanmai.html" class="menu-btn">
-                <div class="icon">🎯</div>
-                <div class="text">
-                    <div class="title">G1 三頭勝負</div>
-                </div>
-                <div class="arrow">›</div>
-            </a>
-            <a href="pog.html" class="menu-btn">
-                <div class="icon">🐴</div>
-                <div class="text">
-                    <div class="title">POG</div>
-                </div>
-                <div class="arrow">›</div>
-            </a>
-        </div>
-
-        <footer>© 2026 MARUKOME CUP</footer>
     </div>
+
+    <div class="menu">
+        <a href="santozanmai.html" class="menu-btn">
+            <div class="icon">🎯</div>
+            <div class="text">
+                <div class="title">G1 三頭勝負</div>
+            </div>
+            <div class="arrow">›</div>
+        </a>
+        <a href="pog.html" class="menu-btn">
+            <div class="icon">🐴</div>
+            <div class="text">
+                <div class="title">POG</div>
+            </div>
+            <div class="arrow">›</div>
+        </a>
+    </div>
+
+    <div class="divider"><hr class="divider-line"></div>
+
+    <footer>© 2026 MARUKOME CUP — All Rights Reserved</footer>
+
+</div>
 </body>
 </html>

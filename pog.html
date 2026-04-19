@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>マルコメ杯 POG</title>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&display=swap');body{font-family:'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif;}</style>
 </head>
 <body>
 <!-- Firebase compat SDK -->
@@ -182,8 +183,8 @@ tr:last-child td{border-bottom:none;}
         <div class="chk-row"><input type="checkbox" id="edit-sp-tansho"><label style="margin:0;">単勝万券　+10pt</label></div>
         <div class="chk-row"><input type="checkbox" id="edit-sp-umaren"><label style="margin:0;">馬連万券　+5pt</label></div>
         <div class="chk-row"><input type="checkbox" id="edit-sp-umatan"><label style="margin:0;">馬単万券　+5pt</label></div>
-        <div class="chk-row"><input type="checkbox" id="edit-sp-derby"><label style="margin:0;">ダービー勝ち　+50pt</label></div>
-        <div class="chk-row"><input type="checkbox" id="edit-sp-g1x2"><label style="margin:0;">G1・2勝目　+50pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="edit-sp-derby" onchange="document.getElementById('edit-sp-g1x2').disabled=this.checked;if(this.checked)document.getElementById('edit-sp-g1x2').checked=false;"><label style="margin:0;">ダービー勝ち　+50pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="edit-sp-g1x2"><label style="margin:0;">同一馬G1・2勝目以降（ダービー除く）　+50pt</label></div>
         <div class="chk-row"><input type="checkbox" id="edit-sp-donziri" disabled><label style="margin:0;color:#9ca3af;">最下位（ドンジリ）　−3pt　<small>自動</small></label></div>
         <div class="chk-row"><input type="checkbox" id="edit-sp-chu" disabled><label style="margin:0;color:#9ca3af;">抽せん馬勝利　+5pt　<small>自動</small></label></div>
       </div>
@@ -317,8 +318,8 @@ tr:last-child td{border-bottom:none;}
         <div class="chk-row"><input type="checkbox" id="sp-tansho"><label style="margin:0;">単勝万券　+10pt</label></div>
         <div class="chk-row"><input type="checkbox" id="sp-umaren"><label style="margin:0;">馬連万券　+5pt</label></div>
         <div class="chk-row"><input type="checkbox" id="sp-umatan"><label style="margin:0;">馬単万券　+5pt</label></div>
-        <div class="chk-row"><input type="checkbox" id="sp-derby"><label style="margin:0;">ダービー勝ち　+50pt</label></div>
-        <div class="chk-row"><input type="checkbox" id="sp-g1x2"><label style="margin:0;">G1・2勝目　+50pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="sp-derby" onchange="document.getElementById('sp-g1x2').disabled=this.checked;if(this.checked)document.getElementById('sp-g1x2').checked=false;"><label style="margin:0;">ダービー勝ち　+50pt</label></div>
+        <div class="chk-row"><input type="checkbox" id="sp-g1x2"><label style="margin:0;">同一馬G1・2勝目以降（ダービー除く）　+50pt</label></div>
         <div class="chk-row"><input type="checkbox" id="sp-donziri" disabled><label style="margin:0;color:#9ca3af;">最下位（ドンジリ）　−3pt　<small>自動</small></label></div>
         <div class="chk-row"><input type="checkbox" id="sp-chu" disabled><label style="margin:0;color:#9ca3af;">抽せん馬勝利　+5pt　<small>自動</small></label></div>
       </div>
@@ -401,7 +402,6 @@ tr:last-child td{border-bottom:none;}
   </div>
   <div class="card">
     <div class="card-title">ポイント設定</div>
-    <div class="card-sub">リステッド競走はオープンとして集計されます</div>
     <table>
       <tr><th>種別</th><th>1着</th><th>2着</th><th>3着</th><th>4着</th><th>5着</th><th>6〜8着</th></tr>
       <tr><td>新馬</td><td><input class="pt-inp" type="number" id="pt-newface-1" value="8" min="0"></td><td colspan="5" style="color:var(--color-text-tertiary);font-size:12px;">なし</td></tr>
@@ -412,6 +412,21 @@ tr:last-child td{border-bottom:none;}
       <tr><td>GII</td><td><input class="pt-inp" type="number" id="pt-G2-1" value="30" min="0"></td><td><input class="pt-inp" type="number" id="pt-G2-2" value="20" min="0"></td><td><input class="pt-inp" type="number" id="pt-G2-3" value="15" min="0"></td><td colspan="3" style="color:var(--color-text-tertiary);font-size:12px;">なし</td></tr>
       <tr><td>GI</td><td><input class="pt-inp" type="number" id="pt-G1-1" value="50" min="0"></td><td><input class="pt-inp" type="number" id="pt-G1-2" value="30" min="0"></td><td><input class="pt-inp" type="number" id="pt-G1-3" value="20" min="0"></td><td><input class="pt-inp" type="number" id="pt-G1-4" value="15" min="0"></td><td><input class="pt-inp" type="number" id="pt-G1-5" value="10" min="0"></td><td><input class="pt-inp" type="number" id="pt-G1-6" value="5" min="0"></td></tr>
     </table>
+  </div>
+  <div class="card">
+    <div class="card-title">特別ポイント設定</div>
+    <div class="card-sub">1着時のみ加算されます</div>
+    <table>
+      <tr><th>項目</th><th>加算pt</th></tr>
+      <tr><td>レコード勝ち</td><td><input class="pt-inp" type="number" id="sp-pt-record" value="5" min="0"></td></tr>
+      <tr><td>単勝万馬券</td><td><input class="pt-inp" type="number" id="sp-pt-tansho" value="10" min="0"></td></tr>
+      <tr><td>馬連万馬券</td><td><input class="pt-inp" type="number" id="sp-pt-umaren" value="5" min="0"></td></tr>
+      <tr><td>馬単万馬券</td><td><input class="pt-inp" type="number" id="sp-pt-umatan" value="5" min="0"></td></tr>
+      <tr><td>日本ダービー制覇</td><td><input class="pt-inp" type="number" id="sp-pt-derby" value="50" min="0"></td></tr>
+      <tr><td>同一馬のG1・2勝目以降（ダービー除く）</td><td><input class="pt-inp" type="number" id="sp-pt-g1x2" value="50" min="0"></td></tr>
+      <tr><td>抽せん馬ボーナス</td><td><input class="pt-inp" type="number" id="sp-pt-chu" value="5" min="0"></td></tr>
+    </table>
+    <div style="margin-top:12px;"><button class="btn btn-p" onclick="saveSettings()">保存する</button></div>
   </div>
 </div>
 
@@ -723,6 +738,18 @@ function sw(tab,el){
   if(tab==='horses'){renderHorseList();renderOwnerSel();}
   if(tab==='race'){renderRaceHorseSel();renderRaceHist();}
   if(tab==='owners') renderOwnerList();
+  if(tab==='settings') loadSettingsUI();
+}
+function loadSettingsUI(){
+  const sp=getSpPts();
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+  set('sp-pt-record',sp.record);
+  set('sp-pt-tansho',sp.tansho);
+  set('sp-pt-umaren',sp.umaren);
+  set('sp-pt-umatan',sp.umatan);
+  set('sp-pt-derby', sp.derby);
+  set('sp-pt-g1x2',  sp.g1x2);
+  set('sp-pt-chu',   sp.chu);
 }
 
 function getPt(grade,place){
@@ -740,13 +767,14 @@ function calcPts(r){
   const place=isLast?99:parseInt(r.place);
   let pt=getPt(r.grade,place);
   if(place===1){
-    if(r.sp_record) pt+=5;
-    if(r.sp_tansho) pt+=10;
-    if(r.sp_umaren) pt+=5;
-    if(r.sp_umatan) pt+=5;
-    if(r.sp_derby) pt+=50;
-    if(r.sp_g1x2) pt+=50;
-    if(horse&&horse.chu) pt+=5;
+    const sp=getSpPts();
+    if(r.sp_record) pt+=sp.record;
+    if(r.sp_tansho) pt+=sp.tansho;
+    if(r.sp_umaren) pt+=sp.umaren;
+    if(r.sp_umatan) pt+=sp.umatan;
+    if(r.sp_derby)             pt+=sp.derby;
+    if(r.sp_g1x2&&!r.sp_derby) pt+=sp.g1x2;
+    if(horse&&horse.chu) pt+=sp.chu;
   }
   if(isLast) pt-=3;
   return pt;
@@ -759,26 +787,19 @@ function calcPtDetail(r){
   const base=getPt(r.grade,place);
   const specials=[];
   if(place===1){
-    if(r.sp_record) specials.push('レコード+5');
-    if(r.sp_tansho) specials.push('単勝万券+10');
-    if(r.sp_umaren) specials.push('馬連万券+5');
-    if(r.sp_umatan) specials.push('馬単万券+5');
-    if(r.sp_derby) specials.push('ダービー+50');
-    if(r.sp_g1x2) specials.push('G1複数+50');
-    if(horse&&horse.chu) specials.push('抽せん馬+5');
+    const sp=getSpPts();
+    if(r.sp_record) specials.push(`レコード+${sp.record}`);
+    if(r.sp_tansho) specials.push(`単勝万券+${sp.tansho}`);
+    if(r.sp_umaren) specials.push(`馬連万券+${sp.umaren}`);
+    if(r.sp_umatan) specials.push(`馬単万券+${sp.umatan}`);
+    if(r.sp_derby)             specials.push(`ダービー+${sp.derby}`);
+    if(r.sp_g1x2&&!r.sp_derby) specials.push(`G1複数+${sp.g1x2}`);
+    if(horse&&horse.chu) specials.push(`抽せん馬+${sp.chu}`);
   }
   if(isLast) specials.push('最下位−3');
   return {base:base, specials:specials, total:calcPts(r)};
 }
 
-function toggleDetail(rowId, chevronId){
-  const row=document.getElementById(rowId);
-  const chv=document.getElementById(chevronId);
-  if(!row) return;
-  const isOpen=row.style.display!=='none';
-  row.style.display=isOpen?'none':'table-row';
-  if(chv) chv.textContent=isOpen?'▶':'▼';
-}
 
 function inPeriod(d){
   if(!S.start&&!S.end) return true;
@@ -836,6 +857,7 @@ function renderRanking(){
     +'<th style="min-width:60px;">指名者</th>'
     +'<th style="width:48px;">出走</th>'
     +'<th style="width:80px;text-align:right;">獲得pt</th>'
+    +'<th style="width:60px;"></th>'
     +'</tr></thead><tbody>'
     +allHs.map(function(h,i){
       const o=S.owners.find(function(ow){return ow.id===h.ownerId;});
@@ -849,47 +871,47 @@ function renderRanking(){
       if(hasRaces){
         const detailRows=races.map(function(r){
           const d=calcPtDetail(r);
-          const spHtml=d.specials.length?' <small style="color:#cc88ff;font-size:10px;">'+d.specials.join(' ')+'</small>':'';
-          const ptHtml=d.total>0?'<b style="color:#00cc44;">+'+d.total+'</b>':d.total<0?'<b style="color:#e74c3c;">'+d.total+'</b>':'<span style="color:#555;">0</span>';
+          const spHtml=d.specials.length?' <small style="color:#7c3aed;font-size:10px;">'+d.specials.join(' ')+'</small>':'';
+          const ptHtml=d.total>0?'<b style="color:#16a34a;">+'+d.total+'</b>':d.total<0?'<b style="color:#dc2626;">'+d.total+'</b>':'<span style="color:#888;">0</span>';
           const placeStr=r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着';
-          return '<tr style="background:'+(r.confirmed?'#003a1a':'#0a0a1a')+';transition:background 0.2s;">'
-            +'<td style="padding:4px 6px;font-size:11px;color:#888;white-space:nowrap;">'+r.date+'</td>'
-            +'<td style="padding:4px 6px;font-size:12px;white-space:nowrap;">'+r.name+'</td>'
-            +'<td style="padding:4px 6px;font-size:11px;color:#888;white-space:nowrap;">'+(gradeLabels[r.grade]||r.grade)+'</td>'
-            +'<td style="padding:4px 6px;font-size:12px;text-align:center;white-space:nowrap;">'+placeStr+'</td>'
-            +'<td style="padding:4px 6px;font-size:12px;text-align:right;white-space:nowrap;">'+ptHtml+spHtml+'</td>'
-            +'<td style="padding:4px 6px;text-align:center;white-space:nowrap;">'
-            +'<input type="checkbox" '+(r.confirmed?'checked':'')+' onclick="event.stopPropagation();toggleConfirmed('+r.id+',this)" title="確認済みにする" style="cursor:pointer;width:auto;accent-color:#00cc44;">'
+          return '<tr style="background:'+(r.confirmed?'#f0fdf4':'#fff')+';">'
+            +'<td style="padding:4px 8px;font-size:11px;color:#888;white-space:nowrap;">'+r.date+'</td>'
+            +'<td style="padding:4px 8px;font-size:12px;white-space:nowrap;">'+r.name+'</td>'
+            +'<td style="padding:4px 8px;font-size:11px;color:#888;white-space:nowrap;">'+(gradeLabels[r.grade]||r.grade)+'</td>'
+            +'<td style="padding:4px 8px;font-size:12px;text-align:center;white-space:nowrap;">'+placeStr+'</td>'
+            +'<td style="padding:4px 8px;font-size:12px;text-align:right;white-space:nowrap;">'+ptHtml+spHtml+'</td>'
+            +'<td style="padding:4px 8px;text-align:center;white-space:nowrap;">'
+            +'<input type="checkbox" '+(r.confirmed?'checked':'')+' onclick="event.stopPropagation();toggleConfirmed('+r.id+',this)" title="確認済み" style="cursor:pointer;width:auto;accent-color:#16a34a;">'
             +'</td>'
-            +'<td style="padding:4px 6px;text-align:center;white-space:nowrap;">'
-            +'<button onclick="event.stopPropagation();editRace('+r.id+')" style="font-size:10px;padding:2px 8px;border:1px solid #4488ff;background:#0f1f3a;cursor:pointer;color:#eee;">編集</button>'
+            +'<td style="padding:4px 8px;text-align:center;white-space:nowrap;">'
+            +'<button onclick="event.stopPropagation();editRace('+r.id+')" style="font-size:10px;padding:2px 8px;border:1px solid #d4e8d4;background:#f0f8f4;cursor:pointer;color:#006633;border-radius:3px;">編集</button>'
             +'</td>'
             +'</tr>';
         }).join('');
         detailHtml='<tr id="hd-'+hid+'" style="display:none;">'
-          +'<td colspan="5" style="padding:0;background:#0a0a1a;border-bottom:1px solid #1a3060;">'
-          +'<table style="width:auto;border-collapse:collapse;">'
-          +'<thead><tr style="background:#eff2f7;">'
-          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:left;border-bottom:1px solid #e2e8f0;">日付</th>'
-          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:left;border-bottom:1px solid #e2e8f0;">レース</th>'
-          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:left;border-bottom:1px solid #e2e8f0;">区分</th>'
-          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:center;border-bottom:1px solid #e2e8f0;">着順</th>'
-          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:right;border-bottom:1px solid #e2e8f0;">pt</th>'
-          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:center;border-bottom:1px solid #e2e8f0;width:36px;">確認</th>'
-          +'<th style="padding:5px 6px;font-size:11px;font-weight:600;color:#64748b;text-align:center;border-bottom:1px solid #e2e8f0;width:46px;"></th>'
+          +'<td colspan="5" style="padding:0;border-bottom:1px solid #d4e8d4;">'
+          +'<table style="width:100%;border-collapse:collapse;">'
+          +'<thead><tr style="background:#f0f8f4;">'
+          +'<th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:left;border-bottom:1px solid #d4e8d4;">日付</th>'
+          +'<th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:left;border-bottom:1px solid #d4e8d4;">レース</th>'
+          +'<th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:left;border-bottom:1px solid #d4e8d4;">区分</th>'
+          +'<th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:center;border-bottom:1px solid #d4e8d4;">着順</th>'
+          +'<th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:right;border-bottom:1px solid #d4e8d4;">pt</th>'
+          +'<th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:center;border-bottom:1px solid #d4e8d4;width:36px;">確認</th>'
+          +'<th style="border-bottom:1px solid #d4e8d4;width:46px;"></th>'
           +'</tr></thead>'
           +'<tbody>'+detailRows+'</tbody>'
           +'</table></td></tr>';
       }
-      const chevron=hasRaces?'<span id="chv-'+hid+'" style="font-size:9px;color:#9ca3af;margin-left:5px;">▶</span>':'';
-      const rowStyle=hasRaces?'cursor:pointer;user-select:none;':'';
-      const onclick=hasRaces?'onclick="toggleDetail(\'hd-'+hid+'\',\'chv-'+hid+'\')"':'';
-      return '<tr '+onclick+' style="'+rowStyle+'">'
+      const seisekiBtn=hasRaces?'<button onclick="event.stopPropagation();toggleDetail(\'hd-'+hid+'\',\'sb-'+hid+'\')" id="sb-'+hid+'" style="font-size:11px;padding:2px 7px;border:1px solid #a7f3d0;border-radius:4px;background:#ecfdf5;color:#065f46;cursor:pointer;white-space:nowrap;">成績▶</button>':'';
+      const urlBtn=hObj&&hObj.jraUrl?'<a href="'+hObj.jraUrl+'" target="_blank" onclick="event.stopPropagation()" style="display:inline-block;font-size:11px;padding:2px 7px;border:1px solid #90caf9;border-radius:4px;background:#e3f2fd;color:#1565c0;text-decoration:none;white-space:nowrap;margin-right:4px;">JRA</a>':'';
+      return '<tr style="background:'+(i%2===1?'#f9fdf9':'#fff')+';">'
         +'<td style="color:#6b7280;font-size:12px;text-align:center;">'+(i+1)+'</td>'
-        +'<td style="font-weight:500;">'+horseLink(hObj)+chevron+'</td>'
+        +'<td style="font-weight:600;font-size:13px;color:#222;">'+urlBtn+(hObj?hObj.name:h.name)+'</td>'
         +'<td style="color:#6b7280;font-size:12px;">'+(o?o.name:'--')+'</td>'
         +'<td style="color:#6b7280;font-size:12px;text-align:center;">'+h.runs+'戦</td>'
         +'<td style="text-align:right;'+ptColor+'">'+(h.pts>0?'+':'')+h.pts+'pt</td>'
+        +'<td style="white-space:nowrap;">'+seisekiBtn+'</td>'
         +'</tr>'+detailHtml;
     }).join('')+'</tbody></table>';
 }
@@ -992,26 +1014,46 @@ function renderHorseList(){
       const hRaces=S.races.filter(r=>r.horseId===h.id&&inPeriod(r.date)).sort((a,b)=>b.date.localeCompare(a.date));
       const totalPt=hRaces.reduce((s,r)=>s+calcPts(r),0);
       const hasRaces=hRaces.length>0;
-      const chevron=hasRaces?`<span id="hl-chv-${h.id}" style="font-size:9px;color:#9ca3af;margin-left:5px;">▶</span>`:'';
-      const clickAttr=hasRaces?`onclick="toggleDetail('hl-hd-${h.id}','hl-chv-${h.id}')"`:'';
-      const rowStyle=`background:${i%2===1?'#0a0a1a':'#0f1f3a'};${hasRaces?'cursor:pointer;user-select:none;':''}`;
-      const ptColor=totalPt>0?'color:#00cc44;font-weight:700;':totalPt<0?'color:#e74c3c;font-weight:700;':'color:#888;';
+      const rowStyle=`background:${i%2===1?'#f9fdf9':'#fff'};`;
+      const ptColor=totalPt>0?'color:#16a34a;font-weight:700;':totalPt<0?'color:#dc2626;font-weight:700;':'color:#888;';
       const ptStr=totalPt>0?`+${totalPt}`:String(totalPt);
-      let detailHtml='';
+      const urlBtn=h.jraUrl?`<a href="${h.jraUrl}" target="_blank" onclick="event.stopPropagation()" style="display:inline-block;font-size:11px;padding:2px 7px;border:1px solid #90caf9;border-radius:4px;background:#e3f2fd;color:#1565c0;text-decoration:none;white-space:nowrap;">JRA</a> `:'';
+      const seisekiBtn=hasRaces?`<button onclick="event.stopPropagation();toggleDetail('hl-hd-${h.id}','hl-sb-${h.id}')" style="font-size:11px;padding:2px 7px;border:1px solid #a7f3d0;border-radius:4px;background:#ecfdf5;color:#065f46;cursor:pointer;white-space:nowrap;" id="hl-sb-${h.id}">成績▶</button> `:'';
+      const infoBtn=`<button onclick="event.stopPropagation();toggleDetail('hl-id-${h.id}','hl-ib-${h.id}')" style="font-size:11px;padding:2px 7px;border:1px solid #d4e8d4;border-radius:4px;background:#f0f8f4;color:#006633;cursor:pointer;white-space:nowrap;" id="hl-ib-${h.id}">情報▶</button> `;
+
+      let seisekiHtml='';
       if(hasRaces){
         const detailRows=hRaces.map(r=>{
           const d=calcPtDetail(r);
           const spHtml=d.specials.length?` <small style="color:#7c3aed;font-size:10px;">${d.specials.join(' ')}</small>`:'';
-          const ptHtml=d.total>0?`<b style="color:#00cc44;">+${d.total}</b>`:d.total<0?`<b style="color:#e74c3c;">${d.total}</b>`:'<span style="color:#555;">0</span>';
+          const ptHtml=d.total>0?`<b style="color:#16a34a;">+${d.total}</b>`:d.total<0?`<b style="color:#dc2626;">${d.total}</b>`:'<span style="color:#888;">0</span>';
           const placeStr=r.place==='last'?'最下位':r.place==='9'?'9着以下':`${r.place}着`;
-          return `<tr style="background:${r.confirmed?'#003a1a':'#0a0a1a'};transition:background 0.2s;"><td style="padding:4px 6px;font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td style="padding:4px 6px;font-size:12px;white-space:nowrap;">${r.name}</td><td style="padding:4px 6px;font-size:11px;color:#888;white-space:nowrap;">${gradeLabels[r.grade]||r.grade}</td><td style="padding:4px 6px;font-size:12px;text-align:center;white-space:nowrap;">${placeStr}</td><td style="padding:4px 6px;font-size:12px;text-align:right;white-space:nowrap;">${ptHtml}${spHtml}</td><td style="padding:4px 6px;text-align:center;white-space:nowrap;"><input type="checkbox" ${r.confirmed?'checked':''} onclick="event.stopPropagation();toggleConfirmed(${r.id},this)" title="確認済みにする" style="cursor:pointer;width:auto;accent-color:#00cc44;"></td><td style="padding:4px 6px;text-align:center;white-space:nowrap;"><button onclick="event.stopPropagation();editRace(${r.id})" style="font-size:10px;padding:2px 8px;border:1px solid #4488ff;background:#0f1f3a;cursor:pointer;color:#eee;">編集</button></td></tr>`;
+          return `<tr style="background:${r.confirmed?'#f0fdf4':'#fff'};"><td style="padding:4px 8px;font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td style="padding:4px 8px;font-size:12px;white-space:nowrap;">${r.name}</td><td style="padding:4px 8px;font-size:11px;color:#888;white-space:nowrap;">${gradeLabels[r.grade]||r.grade}</td><td style="padding:4px 8px;font-size:12px;text-align:center;white-space:nowrap;">${placeStr}</td><td style="padding:4px 8px;font-size:12px;text-align:right;white-space:nowrap;">${ptHtml}${spHtml}</td><td style="padding:4px 8px;text-align:center;white-space:nowrap;"><input type="checkbox" ${r.confirmed?'checked':''} onclick="event.stopPropagation();toggleConfirmed(${r.id},this)" title="確認済み" style="cursor:pointer;width:auto;accent-color:#16a34a;"></td><td style="padding:4px 8px;text-align:center;white-space:nowrap;"><button onclick="event.stopPropagation();editRace(${r.id})" style="font-size:10px;padding:2px 8px;border:1px solid #d4e8d4;background:#f0f8f4;cursor:pointer;color:#006633;border-radius:3px;">編集</button></td></tr>`;
         }).join('');
-        detailHtml=`<tr id="hl-hd-${h.id}" style="display:none;"><td colspan="10" style="padding:0;background:#0a0a1a;border-bottom:1px solid #1a3060;"><table style="width:auto;border-collapse:collapse;"><thead><tr style="background:#050510;"><th style="padding:5px 6px;font-size:11px;font-weight:600;color:#4488ff;text-align:left;border-bottom:1px solid #1a3060;">日付</th><th style="padding:5px 6px;font-size:11px;font-weight:600;color:#4488ff;text-align:left;border-bottom:1px solid #1a3060;">レース</th><th style="padding:5px 6px;font-size:11px;font-weight:600;color:#4488ff;text-align:left;border-bottom:1px solid #1a3060;">区分</th><th style="padding:5px 6px;font-size:11px;font-weight:600;color:#4488ff;text-align:center;border-bottom:1px solid #1a3060;">着順</th><th style="padding:5px 6px;font-size:11px;font-weight:600;color:#4488ff;text-align:right;border-bottom:1px solid #1a3060;">pt</th><th style="padding:5px 6px;font-size:11px;font-weight:600;color:#4488ff;text-align:center;border-bottom:1px solid #1a3060;width:36px;">確認</th><th style="padding:5px 6px;font-size:11px;border-bottom:1px solid #1a3060;width:46px;"></th></tr></thead><tbody>${detailRows}</tbody></table></td></tr>`;
+        seisekiHtml=`<tr id="hl-hd-${h.id}" style="display:none;"><td colspan="4" style="padding:0;border-bottom:1px solid #d4e8d4;"><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f0f8f4;"><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:left;border-bottom:1px solid #d4e8d4;">日付</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:left;border-bottom:1px solid #d4e8d4;">レース</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:left;border-bottom:1px solid #d4e8d4;">区分</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:center;border-bottom:1px solid #d4e8d4;">着順</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:right;border-bottom:1px solid #d4e8d4;">pt</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:center;border-bottom:1px solid #d4e8d4;width:36px;">確認</th><th style="border-bottom:1px solid #d4e8d4;width:46px;"></th></tr></thead><tbody>${detailRows}</tbody></table></td></tr>`;
       }
-      return `<tr ${clickAttr} style="${rowStyle}"><td style="text-align:center;font-size:13px;font-weight:700;color:${h.chu?'#1d4ed8':'#d1d5db'};">${h.chu?'抽':'−'}</td><td style="font-weight:500;">${horseLink(h)}${chevron}</td><td style="color:#6b7280;font-size:12px;">${h.stable}　${h.trainer}</td><td style="color:#6b7280;font-size:12px;">${h.sire||'−'}</td><td style="color:#6b7280;font-size:12px;">${h.dam||'−'}</td><td style="color:#6b7280;font-size:12px;">${h.bms||'−'}</td><td style="color:#6b7280;font-size:12px;">${h.owner2||'−'}</td><td style="color:#6b7280;font-size:12px;">${h.breeder||'−'}</td><td style="text-align:right;${ptColor};white-space:nowrap;">${ptStr}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="event.stopPropagation();editHorse(${h.id})">編集</button> <button class="btn btn-d" onclick="event.stopPropagation();delHorse(${h.id})">×</button></td></tr>${detailHtml}`;
+
+      const infoHtml=`<tr id="hl-id-${h.id}" style="display:none;"><td colspan="4" style="padding:8px 12px;background:#f8fffe;border-bottom:1px solid #d4e8d4;font-size:12px;color:#444;line-height:1.9;">
+        <span style="display:inline-block;margin-right:16px;"><b style="color:#006633;">所属</b> ${h.stable||'−'}　${h.trainer||'−'}</span>
+        <span style="display:inline-block;margin-right:16px;"><b style="color:#006633;">父</b> ${h.sire||'−'}</span>
+        <span style="display:inline-block;margin-right:16px;"><b style="color:#006633;">母</b> ${h.dam||'−'}</span>
+        <span style="display:inline-block;margin-right:16px;"><b style="color:#006633;">母父</b> ${h.bms||'−'}</span>
+        <span style="display:inline-block;margin-right:16px;"><b style="color:#006633;">馬主</b> ${h.owner2||'−'}</span>
+        <span style="display:inline-block;"><b style="color:#006633;">生産者</b> ${h.breeder||'−'}</span>
+      </td></tr>`;
+
+      return `<tr style="${rowStyle}"><td style="text-align:center;font-size:13px;font-weight:700;color:${h.chu?'#1d4ed8':'#ccc'};">${h.chu?'抽':'−'}</td><td style="font-weight:600;font-size:13px;color:#222;">${h.name}</td><td style="text-align:right;${ptColor};white-space:nowrap;">${ptStr}pt</td><td style="white-space:nowrap;padding-right:8px;">${urlBtn}${seisekiBtn}${infoBtn}<button class="btn-edit" onclick="event.stopPropagation();editHorse(${h.id})">編集</button> <button class="btn btn-d" onclick="event.stopPropagation();delHorse(${h.id})">×</button></td></tr>${seisekiHtml}${infoHtml}`;
     }).join('');
-    return `<div style="margin-bottom:28px;"><div style="font-weight:700;font-size:15px;padding:6px 2px;border-bottom:2px solid #e5e7eb;margin-bottom:10px;">${o.name}（${hs.length}頭）</div><table class="horse-table"><thead><tr><th style="text-align:center;width:36px;">抽</th><th>馬名</th><th>所属</th><th>父</th><th>母</th><th>母父</th><th>馬主</th><th>生産者</th><th style="width:60px;text-align:right;">獲得pt</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    return `<div style="margin-bottom:28px;"><div style="font-weight:700;font-size:15px;padding:6px 2px;border-bottom:2px solid #d4e8d4;margin-bottom:10px;color:#006633;">${o.name}（${hs.length}頭）</div><table class="horse-table"><thead><tr><th style="text-align:center;width:36px;">抽</th><th>馬名</th><th style="width:70px;text-align:right;">獲得pt</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }).join('');
+}
+function toggleDetail(rowId, btnId){
+  const row=document.getElementById(rowId);
+  const btn=document.getElementById(btnId);
+  if(!row) return;
+  const isOpen=row.style.display!=='none';
+  row.style.display=isOpen?'none':'table-row';
+  if(btn) btn.textContent=btn.textContent.replace(isOpen?'▼':'▶', isOpen?'▶':'▼');
 }
 function delHorse(id){
   if(!confirm('この馬を削除しますか？')) return;
@@ -1081,7 +1123,7 @@ function renderRaceHist(){
   const gl={G1:'G1',G2:'G2',G3:'G3',OP:'OP/Listed',flat:'平場',maiden:'未勝利',newface:'新馬'};
   const rl={JRA:'JRA',local:'地方',overseas:'海外'};
   const sorted=[...S.races].sort((a,b)=>b.date.localeCompare(a.date));
-  el.innerHTML=`<table class="horse-table" style="width:auto;"><thead><tr><th>日付</th><th>レース名</th><th>区分</th><th>馬名</th><th>着順</th><th>pt</th><th></th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#0a0a1a':'#0f1f3a'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td style="white-space:nowrap;">${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span></td><td><span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${horseLink(h)}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editRace(${r.id})">編集</button> <button class="btn btn-d" onclick="delRace(${r.id})">×</button></td></tr>`;}).join('')}</tbody></table>`;
+  el.innerHTML=`<table class="horse-table" style="width:auto;"><thead><tr><th>日付</th><th>レース名</th><th>区分</th><th>馬名</th><th>着順</th><th>pt</th><th></th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#f9fdf9':'#fff'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td style="white-space:nowrap;">${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span></td><td><span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${h?h.name:'不明'}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editRace(${r.id})">編集</button> <button class="btn btn-d" onclick="delRace(${r.id})">×</button></td></tr>`;}).join('')}</tbody></table>`;
 }
 function delRace(id){
   S.races=S.races.filter(r=>r.id!==id);
@@ -1149,12 +1191,24 @@ function toggleConfirmed(id, cb){
 function saveSettings(){
   S.name=gv('s-name')||'マルコメ杯POG'; S.round=gn('s-round')||31;
   S.start=gv('s-start'); S.end=gv('s-end');
+  S.spPts={
+    record: gn('sp-pt-record')??5,
+    tansho: gn('sp-pt-tansho')??10,
+    umaren: gn('sp-pt-umaren')??5,
+    umatan: gn('sp-pt-umatan')??5,
+    derby:  gn('sp-pt-derby')??50,
+    g1x2:   gn('sp-pt-g1x2')??50,
+    chu:    gn('sp-pt-chu')??5,
+  };
   document.getElementById('pog-title').textContent=`第${S.round}回 ${S.name}`;
   const p=S.start&&S.end?`集計期間：${S.start} 〜 ${S.end}`:S.start?`集計開始：${S.start}`:'集計期間：未設定';
   document.getElementById('meta-period').textContent=p;
   document.getElementById('meta-updated').textContent=`最終更新：${new Date().toLocaleDateString('ja-JP')}`;
   saveData();
   alert('設定を保存しました');
+}
+function getSpPts(){
+  return S.spPts||{record:5,tansho:10,umaren:5,umatan:5,derby:50,g1x2:50,chu:5};
 }
 
 // データ管理機能
