@@ -261,8 +261,8 @@ tr:last-child td{border-bottom:none;}
 
 <div class="tabs">
   <button class="tab active" onclick="sw('ranking',this)">ランキング</button>
-  <button class="tab" onclick="sw('race',this)">レース入力</button>
   <button class="tab" onclick="sw('horses',this)">指名馬登録</button>
+  <button class="tab" onclick="sw('race',this)">レース入力</button>
   <button class="tab" onclick="sw('owners',this)">参加者設定</button>
   <button class="tab" onclick="sw('settings',this)">大会設定</button>
   <button class="tab" onclick="sw('datamanage',this)">データ管理</button>
@@ -330,16 +330,8 @@ tr:last-child td{border-bottom:none;}
 </div>
 
 <div id="horses" class="sec">
-  <div class="jra-box">
-    <div class="jra-box-title">JRAページから自動入力する方法</div>
-    <div class="jra-steps">
-      ① JRAのサイトで馬の情報ページを開く<br>
-      ② そのURLをClaudeに「このページを読み取って登録して」と伝える<br>
-      ③ Claudeが馬名・血統・厩舎などを自動で入力してくれます
-    </div>
-  </div>
   <div class="card">
-    <div class="card-title">手動で登録 / JRAから読み取り後に確認・修正</div>
+    <div class="card-title">馬を登録する</div>
     <div id="h-alert"></div>
     <div class="g2">
       <div><label>馬名</label><input type="text" id="h-name" placeholder="例：ベレシート"></div>
@@ -431,17 +423,9 @@ tr:last-child td{border-bottom:none;}
 </div>
 
 <div id="datamanage" class="sec">
-  <div class="notion-box">
-    <div class="notion-box-title">📋 Notionへの同期方法</div>
-    <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8;">
-      ① 下の「JSONをコピー」ボタンをクリック<br>
-      ② ClaudeのチャットにJSONを貼り付けて「このデータをNotionに同期して」と送信<br>
-      ③ Claude（Notion MCP接続済み）が自動でNotionのデータベースを更新します
-    </div>
-  </div>
   <div class="card">
     <div class="card-title">データのエクスポート</div>
-    <div class="card-sub">現在のデータをJSON形式でコピーし、バックアップやNotion同期に使用できます</div>
+    <div class="card-sub">現在のデータをJSON形式でコピーし、バックアップに使用できます</div>
     <div id="export-alert"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button class="btn btn-p" onclick="exportJSON()">📋 JSONをコピー</button>
@@ -551,167 +535,6 @@ DEFAULT_DATA.horses.forEach(def => {
   }
 });
 
-// レース結果の自動追加（URLから取得したデータを初回のみ登録）
-(function seedRaces(){
-  const sp0 = {sp_record:false,sp_tansho:false,sp_umaren:false,sp_umatan:false,sp_derby:false,sp_g1x2:false,confirmed:false};
-  const seeds = [
-    // ベレシート（西澤）
-    {name:'2歳新馬',   grade:'newface', date:'2025-07-20', horseName:'ベレシート', place:'1',  region:'中央'},
-    {name:'エリカ賞',   grade:'flat',    date:'2025-12-13', horseName:'ベレシート', place:'2',  region:'中央'},
-    {name:'共同通信杯', grade:'G3',      date:'2026-02-15', horseName:'ベレシート', place:'2',  region:'中央'},
-    // フィロステファニ（西澤）
-    {name:'2歳新馬',     grade:'newface', date:'2025-07-27', horseName:'フィロステファニ', place:'1', region:'中央'},
-    {name:'アルテミスS', grade:'G3',      date:'2025-10-25', horseName:'フィロステファニ', place:'1', region:'中央'},
-    // バルセシート（西澤）
-    {name:'2歳新馬',                          grade:'newface', date:'2025-10-13', horseName:'バルセシート', place:'1', region:'中央'},
-    {name:'ラジオNIKKEI杯京都2歳ステークス', grade:'G3',      date:'2025-11-29', horseName:'バルセシート', place:'7', region:'中央'},
-    {name:'シンザン記念',                      grade:'G3',      date:'2026-01-12', horseName:'バルセシート', place:'4', region:'中央'},
-    {name:'3歳1勝クラス',                      grade:'flat',    date:'2026-03-15', horseName:'バルセシート', place:'2', region:'中央'},
-    {name:'チャーチルダウンズカップ',          grade:'OP',      date:'2026-04-04', horseName:'バルセシート', place:'3', region:'中央'},
-    // ガローファノ（西澤）
-    {name:'2歳新馬',     grade:'newface', date:'2025-08-31', horseName:'ガローファノ', place:'1', region:'中央'},
-    {name:'百日草特別',   grade:'flat',    date:'2025-11-02', horseName:'ガローファノ', place:'5', region:'中央'},
-    {name:'ゆりかもめ賞', grade:'flat',    date:'2026-02-10', horseName:'ガローファノ', place:'3', region:'中央'},
-    // コニーアイランド（西澤）
-    {name:'2歳新馬',        grade:'newface', date:'2025-08-02', horseName:'コニーアイランド', place:'1',  region:'中央'},
-    {name:'白菊賞',          grade:'flat',    date:'2025-11-30', horseName:'コニーアイランド', place:'4',  region:'中央'},
-    {name:'チューリップ賞', grade:'G3',      date:'2026-03-01', horseName:'コニーアイランド', place:'13', region:'中央'},
-    // チャリングクロス（西澤）
-    {name:'2歳新馬',      grade:'newface', date:'2025-06-21', horseName:'チャリングクロス', place:'9', region:'中央'},
-    {name:'2歳未勝利',    grade:'maiden',  date:'2025-10-12', horseName:'チャリングクロス', place:'1', region:'中央'},
-    {name:'3歳1勝クラス', grade:'flat',    date:'2026-01-05', horseName:'チャリングクロス', place:'3', region:'中央'},
-    {name:'フリージア賞',  grade:'flat',    date:'2026-02-21', horseName:'チャリングクロス', place:'5', region:'中央'},
-    // サガルマータ（西澤）
-    {name:'2歳新馬',   grade:'newface', date:'2025-12-13', horseName:'サガルマータ', place:'3', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-21', horseName:'サガルマータ', place:'1', region:'中央'},
-    // グランマエストロ（西澤）
-    {name:'2歳新馬',   grade:'newface', date:'2025-08-30', horseName:'グランマエストロ', place:'8', region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-02', horseName:'グランマエストロ', place:'3', region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-29', horseName:'グランマエストロ', place:'2', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-21', horseName:'グランマエストロ', place:'3', region:'中央'},
-    // ヘイジュード（西澤）
-    {name:'3歳新馬',   grade:'newface', date:'2026-02-07', horseName:'ヘイジュード', place:'3', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-21', horseName:'ヘイジュード', place:'4', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-03-15', horseName:'ヘイジュード', place:'2', region:'中央'},
-    // ハムタン（西澤）
-    {name:'2歳新馬',   grade:'newface', date:'2025-07-20', horseName:'ハムタン', place:'2', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-03-14', horseName:'ハムタン', place:'3', region:'中央'},
-    // サトノトリニティ（西澤）
-    {name:'2歳新馬',   grade:'newface', date:'2025-10-04', horseName:'サトノトリニティ', place:'7', region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-30', horseName:'サトノトリニティ', place:'4', region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-12-14', horseName:'サトノトリニティ', place:'4', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-21', horseName:'サトノトリニティ', place:'6', region:'中央'},
-    // イエッサー（西澤）
-    {name:'2歳新馬',   grade:'newface', date:'2025-09-27', horseName:'イエッサー', place:'11', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-03-14', horseName:'イエッサー', place:'13', region:'中央'},
-    // ダイヤモンドパレス（西澤）
-    {name:'3歳新馬',   grade:'newface', date:'2026-01-31', horseName:'ダイヤモンドパレス', place:'8', region:'中央'},
-    // マジックパレス・トラコ：未出走
-    // ===== 髙坂 =====
-    // アランカール（髙坂）
-    {name:'2歳新馬',      grade:'newface', date:'2025-07-05', horseName:'アランカール', place:'1', region:'中央'},
-    {name:'野路菊S',      grade:'OP',      date:'2025-09-20', horseName:'アランカール', place:'1', region:'中央'},
-    {name:'阪神JF',       grade:'G1',      date:'2025-12-14', horseName:'アランカール', place:'5', region:'中央'},
-    {name:'チューリップ賞', grade:'G3',    date:'2026-03-01', horseName:'アランカール', place:'3', region:'中央'},
-    // ラディアントスター（髙坂）
-    {name:'2歳新馬',      grade:'newface', date:'2025-07-06', horseName:'ラディアントスター', place:'2', region:'中央'},
-    {name:'2歳未勝利',    grade:'maiden',  date:'2025-07-19', horseName:'ラディアントスター', place:'2', region:'中央'},
-    {name:'2歳未勝利',    grade:'maiden',  date:'2025-11-09', horseName:'ラディアントスター', place:'1', region:'中央'},
-    {name:'若駒S',        grade:'OP',      date:'2026-01-24', horseName:'ラディアントスター', place:'4', region:'中央'},
-    {name:'3歳1勝クラス', grade:'flat',    date:'2026-03-22', horseName:'ラディアントスター', place:'1', region:'中央'},
-    // イクシード（髙坂）
-    {name:'2歳新馬',   grade:'newface', date:'2025-10-12', horseName:'イクシード', place:'1', region:'中央'},
-    {name:'フラワーC', grade:'G3',      date:'2026-03-21', horseName:'イクシード', place:'3', region:'中央'},
-    // サレジオ（髙坂）
-    {name:'2歳新馬',    grade:'newface', date:'2025-06-15', horseName:'サレジオ', place:'1', region:'中央'},
-    {name:'東スポ2歳S', grade:'G2',      date:'2025-11-24', horseName:'サレジオ', place:'6', region:'中央'},
-    {name:'ジュニアC',  grade:'flat',    date:'2026-01-04', horseName:'サレジオ', place:'2', region:'中央'},
-    // マルガ（髙坂）
-    {name:'2歳新馬',      grade:'newface', date:'2025-07-12', horseName:'マルガ', place:'1', region:'中央'},
-    {name:'アルテミスS',  grade:'G3',      date:'2025-10-25', horseName:'マルガ', place:'5', region:'中央'},
-    {name:'つわぶき賞',   grade:'flat',    date:'2025-12-13', horseName:'マルガ', place:'3', region:'中央'},
-    {name:'クイーンC',    grade:'G3',      date:'2026-02-14', horseName:'マルガ', place:'7', region:'中央'},
-    {name:'3歳1勝クラス', grade:'flat',    date:'2026-03-08', horseName:'マルガ', place:'7', region:'中央'},
-    // ダーリングハースト（髙坂）
-    {name:'2歳新馬',   grade:'newface', date:'2025-06-22', horseName:'ダーリングハースト', place:'3', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-14', horseName:'ダーリングハースト', place:'1', region:'中央'},
-    // プロメサアルムンド（髙坂）
-    {name:'2歳新馬',   grade:'newface', date:'2025-08-03', horseName:'プロメサアルムンド', place:'1', region:'中央'},
-    // パラディオン（髙坂）
-    {name:'2歳新馬',   grade:'newface', date:'2025-11-30', horseName:'パラディオン', place:'1',  region:'中央'},
-    {name:'京成杯',    grade:'G3',      date:'2026-01-18', horseName:'パラディオン', place:'14', region:'中央'},
-    // ガードオブオナー（髙坂）
-    {name:'2歳新馬',   grade:'newface', date:'2025-07-13', horseName:'ガードオブオナー', place:'5',  region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-10-04', horseName:'ガードオブオナー', place:'2',  region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-15', horseName:'ガードオブオナー', place:'6',  region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-01-12', horseName:'ガードオブオナー', place:'11', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-21', horseName:'ガードオブオナー', place:'2',  region:'中央'},
-    // ペルウィクトール（髙坂）
-    {name:'2歳新馬',   grade:'newface', date:'2025-07-27', horseName:'ペルウィクトール', place:'3', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-01-31', horseName:'ペルウィクトール', place:'2', region:'中央'},
-    // サンダーバード（髙坂）
-    {name:'2歳新馬',   grade:'newface', date:'2025-08-02', horseName:'サンダーバード', place:'3',  region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-10-13', horseName:'サンダーバード', place:'2',  region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-01-10', horseName:'サンダーバード', place:'16', region:'中央'},
-    // アスクブームキセキ（髙坂）
-    {name:'2歳新馬',   grade:'newface', date:'2025-12-07', horseName:'アスクブームキセキ', place:'5',  region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-12-20', horseName:'アスクブームキセキ', place:'5',  region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-21', horseName:'アスクブームキセキ', place:'14', region:'中央'},
-    // シーガルワールド・シェリデュース・レイジングサージ：未出走
-    // ===== 小出 =====
-    // アウダーシア（小出）
-    {name:'2歳新馬',   grade:'newface', date:'2025-06-08', horseName:'アウダーシア', place:'2', region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-30', horseName:'アウダーシア', place:'2', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-02-01', horseName:'アウダーシア', place:'1', region:'中央'},
-    {name:'スプリングS', grade:'G2',    date:'2026-03-15', horseName:'アウダーシア', place:'1', region:'中央'},
-    // ブラックオリンピア（小出）
-    {name:'2歳新馬',   grade:'newface', date:'2025-10-25', horseName:'ブラックオリンピア', place:'2',  region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-22', horseName:'ブラックオリンピア', place:'3',  region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-01-24', horseName:'ブラックオリンピア', place:'1',  region:'中央'},
-    {name:'アザレア賞', grade:'flat',   date:'2026-04-04', horseName:'ブラックオリンピア', place:'1',  region:'中央'},
-    // ダークマルス（小出）
-    {name:'2歳新馬',   grade:'newface', date:'2025-10-04', horseName:'ダークマルス', place:'1', region:'中央'},
-    {name:'黄菊賞',    grade:'flat',    date:'2025-11-16', horseName:'ダークマルス', place:'3', region:'中央'},
-    {name:'若駒S',     grade:'OP',      date:'2026-01-24', horseName:'ダークマルス', place:'9', region:'中央'},
-    // アメリカンコール（小出）
-    {name:'2歳新馬',      grade:'newface', date:'2025-12-27', horseName:'アメリカンコール', place:'1',  region:'中央'},
-    {name:'3歳1勝クラス', grade:'flat',    date:'2026-03-22', horseName:'アメリカンコール', place:'13', region:'中央'}, // 要確認
-    // ミッキーマーメイド（小出）
-    {name:'2歳新馬',         grade:'newface', date:'2025-07-12', horseName:'ミッキーマーメイド', place:'5', region:'中央'},
-    {name:'2歳未勝利',       grade:'maiden',  date:'2025-10-04', horseName:'ミッキーマーメイド', place:'1', region:'中央'},
-    {name:'セントポーリア賞', grade:'flat',   date:'2026-02-01', horseName:'ミッキーマーメイド', place:'5', region:'中央'},
-    // ペイジャー（小出）
-    {name:'3歳新馬',   grade:'newface', date:'2026-01-25', horseName:'ペイジャー', place:'1', region:'中央'},
-    // サリエンテ（小出）
-    {name:'2歳新馬',   grade:'newface', date:'2025-11-01', horseName:'サリエンテ', place:'2', region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-12-13', horseName:'サリエンテ', place:'3', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-01-11', horseName:'サリエンテ', place:'3', region:'中央'},
-    // クランズクラウン（小出）
-    {name:'2歳新馬',   grade:'newface', date:'2025-09-21', horseName:'クランズクラウン', place:'5', region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-11-15', horseName:'クランズクラウン', place:'6', region:'中央'},
-    {name:'3歳未勝利', grade:'maiden',  date:'2026-01-31', horseName:'クランズクラウン', place:'2', region:'中央'},
-    // チェルヴァーラ（小出）
-    {name:'2歳新馬',   grade:'newface', date:'2025-07-13', horseName:'チェルヴァーラ', place:'3', region:'中央'},
-    {name:'2歳未勝利', grade:'maiden',  date:'2025-08-30', horseName:'チェルヴァーラ', place:'3', region:'中央'},
-    // ジャミールアイン（小出）
-    {name:'2歳新馬',   grade:'newface', date:'2026-01-11', horseName:'ジャミールアイン', place:'5', region:'中央'},
-    // シェーネエルデ（小出）
-    {name:'2歳新馬',   grade:'newface', date:'2025-11-08', horseName:'シェーネエルデ', place:'7', region:'中央'},
-    // アナザーフェイス（小出）
-    {name:'3歳新馬',   grade:'newface', date:'2026-01-25', horseName:'アナザーフェイス', place:'18', region:'中央'}, // 要確認
-    // バックドラフト（小出）：未出走
-    // ラヴズプレミアム（小出）
-    {name:'2歳新馬',   grade:'newface', date:'2025-11-30', horseName:'ラヴズプレミアム', place:'12', region:'中央'}, // 要確認
-    // カドーダムール：JRA未登録
-  ];
-  seeds.forEach(seed => {
-    const horse = S.horses.find(h => h.name === seed.horseName);
-    if (!horse) return;
-    const horseId = horse.id;
-    if (S.races.some(r => r.horseId === horseId && r.date === seed.date && r.name === seed.name)) return;
-    S.races.push({id: S.nRId++, name: seed.name, grade: seed.grade, date: seed.date, horseId, place: seed.place, region: seed.region, ...sp0});
-  });
-})();
 
 function saveData(){
   POG_REF.set(JSON.parse(JSON.stringify(S))).catch(e => console.error('Firestore save error:', e));
@@ -853,9 +676,8 @@ function renderRanking(){
   document.getElementById('horse-rank').innerHTML=!allHs.length?'<div class="empty">馬が登録されていません</div>':
     '<table class="horse-table" style="width:auto;"><thead><tr>'
     +'<th style="width:36px;">順位</th>'
-    +'<th style="min-width:120px;">馬名</th>'
-    +'<th style="min-width:60px;">指名者</th>'
-    +'<th style="width:48px;">出走</th>'
+    +'<th style="white-space:nowrap;">馬名</th>'
+    +'<th style="white-space:nowrap;">指名者</th>'
     +'<th style="width:80px;text-align:right;">獲得pt</th>'
     +'<th style="width:60px;"></th>'
     +'</tr></thead><tbody>'
@@ -866,7 +688,6 @@ function renderRanking(){
       const hid=hObj?hObj.id:null;
       const races=hid?(hraces[hid]||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);}):[];
       const hasRaces=races.length>0;
-      // 内訳行を生成
       let detailHtml='';
       if(hasRaces){
         const detailRows=races.map(function(r){
@@ -904,12 +725,10 @@ function renderRanking(){
           +'</table></td></tr>';
       }
       const seisekiBtn=hasRaces?'<button onclick="event.stopPropagation();toggleDetail(\'hd-'+hid+'\',\'sb-'+hid+'\')" id="sb-'+hid+'" style="font-size:11px;padding:2px 7px;border:1px solid #a7f3d0;border-radius:4px;background:#ecfdf5;color:#065f46;cursor:pointer;white-space:nowrap;">成績▶</button>':'';
-      const urlBtn=hObj&&hObj.jraUrl?'<a href="'+hObj.jraUrl+'" target="_blank" onclick="event.stopPropagation()" style="display:inline-block;font-size:11px;padding:2px 7px;border:1px solid #90caf9;border-radius:4px;background:#e3f2fd;color:#1565c0;text-decoration:none;white-space:nowrap;margin-right:4px;">JRA</a>':'';
       return '<tr style="background:'+(i%2===1?'#f9fdf9':'#fff')+';">'
         +'<td style="color:#6b7280;font-size:12px;text-align:center;">'+(i+1)+'</td>'
-        +'<td style="font-weight:600;font-size:13px;color:#222;">'+urlBtn+(hObj?hObj.name:h.name)+'</td>'
-        +'<td style="color:#6b7280;font-size:12px;">'+(o?o.name:'--')+'</td>'
-        +'<td style="color:#6b7280;font-size:12px;text-align:center;">'+h.runs+'戦</td>'
+        +'<td style="font-weight:600;font-size:13px;color:#222;white-space:nowrap;">'+(hObj?hObj.name:h.name)+'</td>'
+        +'<td style="color:#6b7280;font-size:12px;white-space:nowrap;">'+(o?o.name:'--')+'</td>'
         +'<td style="text-align:right;'+ptColor+'">'+(h.pts>0?'+':'')+h.pts+'pt</td>'
         +'<td style="white-space:nowrap;">'+seisekiBtn+'</td>'
         +'</tr>'+detailHtml;
@@ -1020,6 +839,7 @@ function renderHorseList(){
       const urlBtn=h.jraUrl?`<a href="${h.jraUrl}" target="_blank" onclick="event.stopPropagation()" style="display:inline-block;font-size:11px;padding:2px 7px;border:1px solid #90caf9;border-radius:4px;background:#e3f2fd;color:#1565c0;text-decoration:none;white-space:nowrap;">JRA</a> `:'';
       const seisekiBtn=hasRaces?`<button onclick="event.stopPropagation();toggleDetail('hl-hd-${h.id}','hl-sb-${h.id}')" style="font-size:11px;padding:2px 7px;border:1px solid #a7f3d0;border-radius:4px;background:#ecfdf5;color:#065f46;cursor:pointer;white-space:nowrap;" id="hl-sb-${h.id}">成績▶</button> `:'';
       const infoBtn=`<button onclick="event.stopPropagation();toggleDetail('hl-id-${h.id}','hl-ib-${h.id}')" style="font-size:11px;padding:2px 7px;border:1px solid #d4e8d4;border-radius:4px;background:#f0f8f4;color:#006633;cursor:pointer;white-space:nowrap;" id="hl-ib-${h.id}">情報▶</button> `;
+      const actionBtns=`${urlBtn}${seisekiBtn}${infoBtn}`;
 
       let seisekiHtml='';
       if(hasRaces){
@@ -1042,10 +862,28 @@ function renderHorseList(){
         <span style="display:inline-block;"><b style="color:#006633;">生産者</b> ${h.breeder||'−'}</span>
       </td></tr>`;
 
-      return `<tr style="${rowStyle}"><td style="text-align:center;font-size:13px;font-weight:700;color:${h.chu?'#1d4ed8':'#ccc'};">${h.chu?'抽':'−'}</td><td style="font-weight:600;font-size:13px;color:#222;">${h.name}</td><td style="text-align:right;${ptColor};white-space:nowrap;">${ptStr}pt</td><td style="white-space:nowrap;padding-right:8px;">${urlBtn}${seisekiBtn}${infoBtn}<button class="btn-edit" onclick="event.stopPropagation();editHorse(${h.id})">編集</button> <button class="btn btn-d" onclick="event.stopPropagation();delHorse(${h.id})">×</button></td></tr>${seisekiHtml}${infoHtml}`;
+      return `<tr style="${rowStyle}">
+        <td style="text-align:center;font-size:13px;font-weight:700;color:${h.chu?'#1d4ed8':'#ccc'};">${h.chu?'抽':'−'}</td>
+        <td style="font-weight:600;font-size:13px;color:#222;white-space:nowrap;">${h.name}</td>
+        <td style="text-align:right;${ptColor};white-space:nowrap;">${ptStr}pt</td>
+        <td style="white-space:nowrap;padding-right:8px;">
+          <button onclick="event.stopPropagation();toggleActionBtns('hl-act-${h.id}','hl-tog-${h.id}')" id="hl-tog-${h.id}" style="font-size:11px;padding:2px 7px;border:1px solid #d4e8d4;border-radius:4px;background:#f0f8f4;color:#006633;cursor:pointer;">▶</button>
+          <span id="hl-act-${h.id}" style="display:none;">${actionBtns}</span>
+          <button class="btn-edit" onclick="event.stopPropagation();editHorse(${h.id})">編集</button>
+          <button class="btn btn-d" onclick="event.stopPropagation();delHorse(${h.id})">×</button>
+        </td>
+      </tr>${seisekiHtml}${infoHtml}`;
     }).join('');
     return `<div style="margin-bottom:28px;"><div style="font-weight:700;font-size:15px;padding:6px 2px;border-bottom:2px solid #d4e8d4;margin-bottom:10px;color:#006633;">${o.name}（${hs.length}頭）</div><table class="horse-table"><thead><tr><th style="text-align:center;width:36px;">抽</th><th>馬名</th><th style="width:70px;text-align:right;">獲得pt</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }).join('');
+}
+function toggleActionBtns(spanId, btnId){
+  const span=document.getElementById(spanId);
+  const btn=document.getElementById(btnId);
+  if(!span) return;
+  const isOpen=span.style.display!=='none';
+  span.style.display=isOpen?'none':'inline';
+  if(btn) btn.textContent=isOpen?'▶':'▼';
 }
 function toggleDetail(rowId, btnId){
   const row=document.getElementById(rowId);
@@ -1123,7 +961,7 @@ function renderRaceHist(){
   const gl={G1:'G1',G2:'G2',G3:'G3',OP:'OP/Listed',flat:'平場',maiden:'未勝利',newface:'新馬'};
   const rl={JRA:'JRA',local:'地方',overseas:'海外'};
   const sorted=[...S.races].sort((a,b)=>b.date.localeCompare(a.date));
-  el.innerHTML=`<table class="horse-table" style="width:auto;"><thead><tr><th>日付</th><th>レース名</th><th>区分</th><th>馬名</th><th>着順</th><th>pt</th><th></th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#f9fdf9':'#fff'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td style="white-space:nowrap;">${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span></td><td><span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${h?h.name:'不明'}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editRace(${r.id})">編集</button> <button class="btn btn-d" onclick="delRace(${r.id})">×</button></td></tr>`;}).join('')}</tbody></table>`;
+  el.innerHTML=`<table class="horse-table" style="width:auto;"><thead><tr><th>日付</th><th>レース名</th><th>馬名</th><th>着順</th><th>pt</th><th></th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#f9fdf9':'#fff'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td style="white-space:nowrap;">${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span> <span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${h?h.name:'不明'}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editRace(${r.id})">編集</button> <button class="btn btn-d" onclick="delRace(${r.id})">×</button></td></tr>`;}).join('')}</tbody></table>`;
 }
 function delRace(id){
   S.races=S.races.filter(r=>r.id!==id);
@@ -1217,7 +1055,7 @@ function exportJSON(){
   if(navigator.clipboard){
     navigator.clipboard.writeText(json).then(()=>{
       const al=document.getElementById('export-alert');
-      al.innerHTML='<div class="alert-ok">✓ JSONをクリップボードにコピーしました。Claudeに貼り付けてNotion同期を依頼できます。</div>';
+      al.innerHTML='<div class="alert-ok">✓ JSONをクリップボードにコピーしました。</div>';
       setTimeout(()=>al.innerHTML='',4000);
     }).catch(()=>showJSON());
   } else {
@@ -1329,6 +1167,23 @@ POG_REF.get().then(docSnap => {
       }
     });
   }
+  // 未登録レースの一括追加（2026-04-22）
+  (function addMissingRaces(){
+    const sp0 = {sp_record:false,sp_tansho:false,sp_umaren:false,sp_umatan:false,sp_derby:false,sp_g1x2:false,confirmed:false};
+    const missing = [
+      {horseId:25, name:'3歳未勝利',    grade:'maiden', date:'2026-04-18', place:'6', region:'JRA'},
+      {horseId:33, name:'3歳1勝クラス', grade:'flat',   date:'2026-04-19', place:'2', region:'JRA'},
+      {horseId:38, name:'3歳未勝利',    grade:'maiden', date:'2026-04-19', place:'7', region:'JRA'},
+      {horseId:44, name:'3歳未勝利',    grade:'maiden', date:'2026-04-18', place:'9', region:'JRA'},
+    ];
+    let added = 0;
+    missing.forEach(r => {
+      if (S.races.some(x => x.horseId === r.horseId && x.date === r.date && x.name === r.name)) return;
+      S.races.push({id: S.nRId++, ...r, ...sp0});
+      added++;
+    });
+    if (added > 0) saveData();
+  })();
   initApp();
 }).catch(e => {
   console.error('Firestore load error:', e);
