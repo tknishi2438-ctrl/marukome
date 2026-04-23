@@ -303,7 +303,7 @@
         <div class="special-toggle-wrap">
             <label class="special-toggle-label">
                 <input type="checkbox" id="specialToggle" onchange="onSpecialToggle()" />
-                ⭐ 特別レース（1頭勝負）
+                ⭐ 特別レース
             </label>
             <div style="font-size:0.75rem;color:rgba(255,215,0,0.7);margin-top:4px;">春：宝塚記念　秋：有馬記念</div>
         </div>
@@ -354,7 +354,7 @@
 
     <!-- Player horse selection -->
     <div class="card">
-        <h2 id="horseSelectorTitle">🎠 馬の選択（3頭ずつ）</h2>
+        <h2>🎠 馬の選択（3頭ずつ）</h2>
 
         <!-- Player A -->
         <div class="player-section">
@@ -1161,10 +1161,6 @@ function onSpecialToggle() {
         const name = tournamentSettings.season === '春' ? '宝塚記念' : '有馬記念';
         document.getElementById('raceName').value = name;
     }
-    // カード見出し更新
-    const titleEl = document.getElementById('horseSelectorTitle');
-    if (titleEl) titleEl.textContent = isSpecial ? '🎠 馬の選択（1頭ずつ）' : '🎠 馬の選択（3頭ずつ）';
-    renderHorseSelectors();
 }
 
 // ============================================================
@@ -1172,11 +1168,10 @@ function onSpecialToggle() {
 // ============================================================
 
 function renderHorseSelectors() {
-    const horseCount = isSpecialRace() ? 1 : 3;
     ['A','B','C'].forEach(p => {
         const wrap = document.getElementById(`horses${p}`);
         wrap.innerHTML = '';
-        for (let i = 1; i <= horseCount; i++) {
+        for (let i = 1; i <= 3; i++) {
             const options = horsePresets.map(h =>
                 `<option value="${escH(h)}">${escH(h)}</option>`
             ).join('');
@@ -1238,10 +1233,9 @@ function updateResultsInput() {
     const container = document.getElementById('resultsInput');
     const seen = new Set();
     const horses = [];
-    const horseCount = isSpecialRace() ? 1 : 3;
 
     ['A','B','C'].forEach(p => {
-        for (let i = 1; i <= horseCount; i++) {
+        for (let i = 1; i <= 3; i++) {
             const name = getHorseName(p, i);
             if (name && !seen.has(name)) {
                 seen.add(name);
@@ -1306,13 +1300,12 @@ function calculateResults() {
 
     const totalHorses = parseInt(document.getElementById('totalHorses').value) || 18;
     const isSpecial   = isSpecialRace();
-    const horseCount  = isSpecial ? 1 : 3;
 
     // --- 馬と着順を収集 ---
     const players = {};
     for (const p of ['A','B','C']) {
         const horses = [];
-        for (let i = 1; i <= horseCount; i++) {
+        for (let i = 1; i <= 3; i++) {
             const name = getHorseName(p, i);
             if (!name) {
                 alert(`${pname[p]}の第${i}頭目の馬が選択されていません`);
@@ -1519,8 +1512,6 @@ function resetForm() {
     // 特別レーストグルをリセット
     const specialEl = document.getElementById('specialToggle');
     if (specialEl) specialEl.checked = false;
-    const titleEl = document.getElementById('horseSelectorTitle');
-    if (titleEl) titleEl.textContent = '🎠 馬の選択（3頭ずつ）';
     renderHorseSelectors();
     document.getElementById('resultDisplay').style.display = 'none';
     currentResult = null;
