@@ -1639,34 +1639,12 @@ function getSelectedSeasonKey() {
     return val === 'all' ? null : val;
 }
 
-function renderRanking() {
-    const el = document.getElementById('rankingList');
-    const labelEl = document.getElementById('rankingSeasonLabel');
-    const selectedKey = getSelectedSeasonKey();
-
-    // 「全期間」選択時はランキング非表示
-    if (!selectedKey) {
-        if (labelEl) labelEl.textContent = '';
-        el.innerHTML = '<p class="text-muted text-center" style="padding:20px;">シーズンを選択するとランキングが表示されます</p>';
-        renderSpecialRace(null);
-        return;
-    }
-
-    // シーズンラベルを更新
-    if (labelEl) labelEl.textContent = selectedKey;
-
-    // 選択シーズンの通常レースのみ集計（特別レース除外）
-    const seasonRaces = races.filter(r => r.seasonKey === selectedKey && !r.isSpecial);
-
-    // 特別レース表示を更新
-    renderSpecialRace(selectedKey);
-
+/** 指定シーズンの通常レースを集計してテーブルHTMLを返す */
+function buildRankingTable(seasonKey) {
+    const seasonRaces = races.filter(r => r.seasonKey === seasonKey && !r.isSpecial);
     if (seasonRaces.length === 0) {
-        el.innerHTML = '<p class="text-muted text-center" style="padding:20px;">このシーズンの通常レースはまだありません</p>';
-        return;
+        return '<p class="text-muted text-center" style="padding:12px;">通常レースなし</p>';
     }
-
-    // 集計
     const pm = {};
     seasonRaces.forEach(race => {
         ['A','B','C'].forEach(p => {
@@ -1677,10 +1655,7 @@ function renderRanking() {
             if (race.winners.includes(p)) pm[name].wins++;
         });
     });
-
     const sorted = Object.values(pm).sort((a, b) => b.victoryPts - a.victoryPts);
-
-    // 同点は同順位
     const rankColors = [
         { bg: '#f0a500', color: '#fff', label: '1st' },
         { bg: '#9e9e9e', color: '#fff', label: '2nd' },
@@ -1689,7 +1664,7 @@ function renderRanking() {
     let rankNum = 0, prevPts = null;
     const rows = sorted.map((p, i) => {
         if (p.victoryPts !== prevPts) { rankNum = i + 1; prevPts = p.victoryPts; }
-        const rc   = rankColors[rankNum - 1];
+        const rc    = rankColors[rankNum - 1];
         const badge = rc
             ? `<span style="display:inline-block;background:${rc.bg};color:${rc.color};border-radius:6px;padding:2px 8px;font-size:0.8rem;font-weight:bold;">${rc.label}</span>`
             : `<span style="display:inline-block;background:#e8f5ee;color:#006633;border-radius:6px;padding:2px 8px;font-size:0.8rem;font-weight:bold;">${rankNum}位</span>`;
@@ -1703,21 +1678,60 @@ function renderRanking() {
             <td>${p.races}</td>
         </tr>`;
     }).join('');
+    return `<table class="result-table">
+        <thead><tr>
+            <th>順位</th><th style="text-align:left;">名前</th>
+            <th>勝利pt</th><th>勝数</th><th>参加</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+    </table>`;
+}
 
-    el.innerHTML = `
-        <table class="result-table">
-            <thead>
-                <tr>
-                    <th>順位</th>
-                    <th style="text-align:left;">名前</th>
-                    <th>勝利pt</th>
-                    <th>勝数</th>
-                    <th>参加</th>
-                </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-        </table>
-    `;
+function renderRanking() {
+    const el = document.getElementById('rankingList');
+    const labelEl = document.getElementById('rankingSeasonLabel');
+    const selectedKey = getSelectedSeasonKey();
+
+    // 「全期間」：全シーズンのランキングを並べて表示
+    if (!selectedKey) {
+        if (labelEl) labelEl.textContent = '全シーズン';
+        renderSpecialRace(null);
+
+        const seasons = getExistingSeasons();
+        if (seasons.length === 0) {
+            el.innerHTML = '<p class="text-muted text-center" style="padding:20px;">データがありません</p>';
+            return;
+        }
+
+        el.innerHTML = seasons.map(key => {
+            const specialRace = races.filter(r => r.seasonKey === key && r.isSpecial).pop();
+            const specialHtml = specialRace
+                ? `<div style="margin-top:8px;padding:7px 10px;background:rgba(180,130,0,0.08);border:1px solid rgba(180,130,0,0.3);border-radius:6px;font-size:0.82rem;">
+                       ⭐ <b style="color:#8a6500;">${escH(specialRace.raceName)}</b>
+                       勝者: <b>${escH(specialRace.winners.map(w => specialRace.players[w].name).join(' & '))}</b>
+                   </div>`
+                : '';
+            return `<div style="margin-bottom:20px;">
+                <div style="font-weight:bold;color:#006633;font-size:0.9rem;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #d4e8d4;">
+                    🏆 ${escH(key)}
+                </div>
+                ${buildRankingTable(key)}
+                ${specialHtml}
+            </div>`;
+        }).join('');
+        return;
+    }
+
+    // 特定シーズン選択時
+    if (labelEl) labelEl.textContent = selectedKey;
+    renderSpecialRace(selectedKey);
+
+    const seasonRaces = races.filter(r => r.seasonKey === selectedKey && !r.isSpecial);
+    if (seasonRaces.length === 0) {
+        el.innerHTML = '<p class="text-muted text-center" style="padding:20px;">このシーズンの通常レースはまだありません</p>';
+        return;
+    }
+    el.innerHTML = buildRankingTable(selectedKey);
 }
 
 /** 指定シーズンの特別レース結果を表示 */
