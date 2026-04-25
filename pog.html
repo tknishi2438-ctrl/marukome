@@ -326,7 +326,7 @@ tr:last-child td{border-bottom:none;}
     </div>
     <div style="margin-top:12px;"><button class="btn btn-p" onclick="addRace()">登録する</button></div>
   </div>
-  <div class="card"><div class="card-title">登録済みレース結果</div><div id="race-hist"></div></div>
+  <div class="card"><div class="card-title">登録済みレース結果</div><div style="overflow-x:auto;"><div id="race-hist"></div></div></div>
 </div>
 
 <div id="horses" class="sec">
@@ -999,7 +999,7 @@ function renderRaceHist(){
   const gl={G1:'G1',G2:'G2',G3:'G3',OP:'OP/Listed',flat:'平場',maiden:'未勝利',newface:'新馬'};
   const rl={JRA:'JRA',local:'地方',overseas:'海外'};
   const sorted=[...S.races].sort((a,b)=>b.date.localeCompare(a.date));
-  el.innerHTML=`<table class="horse-table" style="width:auto;"><thead><tr><th>日付</th><th>レース名</th><th>馬名</th><th>着順</th><th>pt</th><th></th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#f9fdf9':'#fff'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td style="white-space:nowrap;">${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span> <span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${h?h.name:'不明'}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editRace(${r.id})">編集</button> <button class="btn btn-d" onclick="delRace(${r.id})">×</button></td></tr>`;}).join('')}</tbody></table>`;
+  el.innerHTML=`<table class="horse-table" style="width:100%;"><thead><tr><th style="white-space:nowrap;">日付</th><th>レース名</th><th style="white-space:nowrap;">馬名</th><th style="white-space:nowrap;">着順</th><th style="white-space:nowrap;">pt</th><th></th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#f9fdf9':'#fff'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td>${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span> <span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${h?h.name:'不明'}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editRace(${r.id})">編集</button> <button class="btn btn-d" onclick="delRace(${r.id})">×</button></td></tr>`;}).join('')}</tbody></table>`;
 }
 function delRace(id){
   S.races=S.races.filter(r=>r.id!==id);
