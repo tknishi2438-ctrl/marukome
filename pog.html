@@ -675,7 +675,6 @@ function renderRanking(){
       '<table class="horse-table" style="width:100%;"><thead><tr>'
       +'<th style="width:52px;text-align:center;">順位</th>'
       +'<th style="white-space:nowrap;">指名者</th>'
-      +'<th style="white-space:nowrap;text-align:center;">頭数</th>'
       +'<th style="width:90px;text-align:right;">獲得pt</th>'
       +'<th style="text-align:left;color:#6b7280;font-weight:400;font-size:11px;min-width:100px;">内訳</th>'
       +'</tr></thead><tbody>'
@@ -694,7 +693,6 @@ function renderRanking(){
         return`<tr style="background:${rowBg};${leftBorder}">`
           +`<td style="text-align:center;padding:10px 8px;">${badge}</td>`
           +`<td style="font-weight:600;font-size:${rn<=3?'15px':'13px'};white-space:nowrap;">${o.name}</td>`
-          +`<td style="text-align:center;color:#6b7280;font-size:12px;white-space:nowrap;">${o.count}頭</td>`
           +`<td style="text-align:right;color:${ptColor};font-size:${ptSize};font-weight:700;white-space:nowrap;">${o.pts}pt</td>`
           +`<td style="text-align:left;font-size:12px;color:#6b7280;line-height:1.8;white-space:nowrap;">全出走 ${runPt}pt<br>全勝利 ${winPt}pt</td>`
           +'</tr>';
