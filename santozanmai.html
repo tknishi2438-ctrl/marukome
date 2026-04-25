@@ -420,10 +420,21 @@
     <div class="card">
         <h2>🏆 ランキング</h2>
         <p class="text-muted" style="margin-bottom:10px; font-size:0.78rem;">
-            累計勝利ポイント順（勝者 +2000/+1000、敗者 −1000/−2000）
+            <span id="rankingSeasonLabel" style="font-weight:bold;color:#006633;"></span>
+            　通常レース集計（勝者 +2000/+1000、敗者 −1000/−2000）
         </p>
         <div id="rankingList"></div>
     </div>
+
+    <!-- 特別レース結果（シーズン終盤の決戦） -->
+    <div class="card" id="specialRaceCard" style="display:none; border:1px solid rgba(180,130,0,0.35);">
+        <h2>⭐ シーズン決戦</h2>
+        <p class="text-muted" style="margin-bottom:10px; font-size:0.78rem;">
+            <span id="specialRaceNameLabel"></span>
+        </p>
+        <div id="specialRaceContent"></div>
+    </div>
+
     <div class="card">
         <h2>📋 レース履歴</h2>
         <div class="filter-bar">
@@ -1615,15 +1626,26 @@ function deleteRace() {
 
 function renderRanking() {
     const el = document.getElementById('rankingList');
+    const currentKey = toSeasonKey(tournamentSettings.year, tournamentSettings.season);
 
-    if (races.length === 0) {
-        el.innerHTML = '<p class="text-muted text-center" style="padding:20px;">該当データがありません</p>';
+    // シーズンラベルを更新
+    const labelEl = document.getElementById('rankingSeasonLabel');
+    if (labelEl) labelEl.textContent = seasonLabel(tournamentSettings.year, tournamentSettings.season);
+
+    // 現在シーズンの通常レースのみ集計（特別レース除外）
+    const seasonRaces = races.filter(r => r.seasonKey === currentKey && !r.isSpecial);
+
+    // 特別レース表示を更新
+    renderSpecialRace(currentKey);
+
+    if (seasonRaces.length === 0) {
+        el.innerHTML = '<p class="text-muted text-center" style="padding:20px;">このシーズンの通常レースはまだありません</p>';
         return;
     }
 
-    // 全プレイヤーの累計集計
+    // 集計
     const pm = {};
-    races.forEach(race => {
+    seasonRaces.forEach(race => {
         ['A','B','C'].forEach(p => {
             const name = race.players[p].name;
             if (!pm[name]) pm[name] = { name, victoryPts: 0, wins: 0, races: 0 };
@@ -1673,6 +1695,26 @@ function renderRanking() {
             <tbody>${rows}</tbody>
         </table>
     `;
+}
+
+/** 現在シーズンの特別レース結果を表示 */
+function renderSpecialRace(currentKey) {
+    const card    = document.getElementById('specialRaceCard');
+    const content = document.getElementById('specialRaceContent');
+    const nameLabel = document.getElementById('specialRaceNameLabel');
+
+    const specialRaces = races.filter(r => r.seasonKey === currentKey && r.isSpecial);
+    if (specialRaces.length === 0) {
+        card.style.display = 'none';
+        return;
+    }
+
+    card.style.display = '';
+    const race = specialRaces[specialRaces.length - 1]; // 最新の特別レース
+    if (nameLabel) nameLabel.textContent = escH(race.raceName);
+
+    content.innerHTML = '';
+    renderResultCard(race, content);
 }
 
 // ============================================================
