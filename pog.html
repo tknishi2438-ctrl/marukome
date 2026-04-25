@@ -908,21 +908,31 @@ function renderHorseList(){
         <td style="font-weight:600;font-size:13px;color:#222;white-space:nowrap;">${h.name}</td>
         <td style="text-align:right;${ptColor};white-space:nowrap;">${ptStr}pt</td>
         <td style="white-space:nowrap;padding-right:8px;">
-          <button onclick="event.stopPropagation();toggleActionBtns('hl-act-${h.id}','hl-tog-${h.id}')" id="hl-tog-${h.id}" style="font-size:11px;padding:2px 7px;border:1px solid #d4e8d4;border-radius:4px;background:#f0f8f4;color:#006633;cursor:pointer;">▶</button>
-          <span id="hl-act-${h.id}" style="display:none;">${actionBtns}<button class="btn-edit" onclick="event.stopPropagation();editHorse(${h.id})">編集</button> </span>
+          <button onclick="event.stopPropagation();toggleActionBtns('hl-act-row-${h.id}','hl-tog-${h.id}','${h.id}')" id="hl-tog-${h.id}" style="font-size:11px;padding:2px 7px;border:1px solid #d4e8d4;border-radius:4px;background:#f0f8f4;color:#006633;cursor:pointer;">▶</button>
         </td>
-      </tr>${seisekiHtml}${infoHtml}`;
+      </tr><tr id="hl-act-row-${h.id}" style="display:none;"><td colspan="4" style="padding:6px 10px;background:#f8fffe;border-bottom:1px solid #e8f5ee;">${actionBtns}<button class="btn-edit" onclick="event.stopPropagation();editHorse(${h.id})">編集</button></td></tr>${seisekiHtml}${infoHtml}`;
     }).join('');
     return `<div style="margin-bottom:28px;"><div style="font-weight:700;font-size:15px;padding:6px 2px;border-bottom:2px solid #d4e8d4;margin-bottom:10px;color:#006633;">${o.name}（${hs.length}頭）</div><table class="horse-table"><thead><tr><th style="text-align:center;width:36px;">抽</th><th>馬名</th><th style="width:70px;text-align:right;">獲得pt</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }).join('');
 }
-function toggleActionBtns(spanId, btnId){
-  const span=document.getElementById(spanId);
+function toggleActionBtns(rowId, btnId, hid){
+  const row=document.getElementById(rowId);
   const btn=document.getElementById(btnId);
-  if(!span) return;
-  const isOpen=span.style.display!=='none';
-  span.style.display=isOpen?'none':'inline';
+  if(!row) return;
+  const isOpen=row.style.display!=='none';
+  row.style.display=isOpen?'none':'table-row';
   if(btn) btn.textContent=isOpen?'▶':'▼';
+  if(isOpen){
+    // トグルを閉じるとき、成績・情報パネルも一緒に閉じる
+    const seisekiRow=document.getElementById('hl-hd-'+hid);
+    const infoRow=document.getElementById('hl-id-'+hid);
+    const seisekiBtn=document.getElementById('hl-sb-'+hid);
+    const infoBtn=document.getElementById('hl-ib-'+hid);
+    if(seisekiRow) seisekiRow.style.display='none';
+    if(infoRow) infoRow.style.display='none';
+    if(seisekiBtn) seisekiBtn.textContent=seisekiBtn.textContent.replace('▼','▶');
+    if(infoBtn) infoBtn.textContent=infoBtn.textContent.replace('▼','▶');
+  }
 }
 function toggleDetail(rowId, btnId){
   const row=document.getElementById(rowId);
