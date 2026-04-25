@@ -664,9 +664,42 @@ function renderRanking(){
   const os=S.owners.map(o=>({...o,pts:op[o.id]||0})).sort((a,b)=>b.pts-a.pts);
   const hs=Object.values(hp).filter(h=>h.pts>0||h.runs>0).sort((a,b)=>b.pts-a.pts);
   document.getElementById('metrics').innerHTML='';
-  const bl=['b-gold','b-silver','b-bronze'];
-  document.getElementById('owner-rank').innerHTML=!os.length?'<div class="empty">参加者が登録されていません</div>':
-    `<table class="horse-table" style="width:auto;"><thead><tr><th style="width:36px;">順位</th><th style="min-width:80px;">指名者</th><th style="width:72px;">指名頭数</th><th style="width:80px;text-align:right;">獲得pt</th><th style="min-width:140px;text-align:right;color:#6b7280;font-weight:400;font-size:11px;">内訳（全出走 / 全勝利）</th></tr></thead><tbody>${os.map((o,i)=>{const ptColor=o.pts>0?'color:#16a34a;font-weight:700;':o.pts<0?'color:#dc2626;font-weight:700;':'';const runPt=bonusRun.has(o.id)?'<span style="color:#166534;font-weight:600;">+30</span>':'<span style="color:#9ca3af;">0</span>';const winPt=bonusWin.has(o.id)?'<span style="color:#854d0e;font-weight:600;">+50</span>':'<span style="color:#9ca3af;">0</span>';return`<tr><td style="color:#6b7280;font-size:12px;text-align:center;">${i+1}</td><td style="font-weight:500;">${o.name}</td><td style="color:#6b7280;font-size:12px;">${o.count}頭</td><td style="text-align:right;${ptColor}">${o.pts}pt</td><td style="text-align:right;font-size:12px;color:#6b7280;white-space:nowrap;">全出走 ${runPt}pt　全勝利 ${winPt}pt</td></tr>`;}).join('')}</tbody></table>`;
+  const rankMeta=[
+    {bg:'#d97706',color:'#fff',label:'1st',rowBg:'#fffbeb',border:'#d97706'},
+    {bg:'#6b7280',color:'#fff',label:'2nd',rowBg:'#f4f4f5',border:'#9ca3af'},
+    {bg:'#92400e',color:'#fff',label:'3rd',rowBg:'#fdf5f0',border:'#b45309'},
+  ];
+  {
+    let rn=0,pp=null;
+    document.getElementById('owner-rank').innerHTML=!os.length?'<div class="empty">参加者が登録されていません</div>':
+      '<table class="horse-table" style="width:100%;"><thead><tr>'
+      +'<th style="width:52px;text-align:center;">順位</th>'
+      +'<th>指名者</th>'
+      +'<th style="width:60px;text-align:center;">頭数</th>'
+      +'<th style="width:90px;text-align:right;">獲得pt</th>'
+      +'<th style="text-align:right;color:#6b7280;font-weight:400;font-size:11px;">内訳（全出走 / 全勝利）</th>'
+      +'</tr></thead><tbody>'
+      +os.map((o,i)=>{
+        if(o.pts!==pp){rn=i+1;pp=o.pts;}
+        const rc=rankMeta[rn-1];
+        const rowBg=rc?rc.rowBg:(i%2===1?'#f9fdf9':'#fff');
+        const leftBorder=rc?`border-left:3px solid ${rc.border};`:'border-left:3px solid transparent;';
+        const badge=rc
+          ?`<span style="display:inline-block;background:${rc.bg};color:${rc.color};border-radius:6px;padding:3px 9px;font-size:0.78rem;font-weight:bold;">${rc.label}</span>`
+          :`<span style="color:#9ca3af;font-size:12px;">${rn}</span>`;
+        const ptColor=o.pts>0?'#16a34a':o.pts<0?'#dc2626':'#6b7280';
+        const ptSize=rn===1?'18px':rn<=3?'15px':'13px';
+        const runPt=bonusRun.has(o.id)?'<span style="color:#166534;font-weight:600;">+30</span>':'<span style="color:#9ca3af;">0</span>';
+        const winPt=bonusWin.has(o.id)?'<span style="color:#854d0e;font-weight:600;">+50</span>':'<span style="color:#9ca3af;">0</span>';
+        return`<tr style="background:${rowBg};${leftBorder}">`
+          +`<td style="text-align:center;padding:10px 8px;">${badge}</td>`
+          +`<td style="font-weight:600;font-size:${rn<=3?'15px':'13px'};">${o.name}</td>`
+          +`<td style="text-align:center;color:#6b7280;font-size:12px;">${o.count}頭</td>`
+          +`<td style="text-align:right;color:${ptColor};font-size:${ptSize};font-weight:700;white-space:nowrap;">${o.pts}pt</td>`
+          +`<td style="text-align:right;font-size:12px;color:#6b7280;white-space:nowrap;">全出走 ${runPt}pt　全勝利 ${winPt}pt</td>`
+          +'</tr>';
+      }).join('')+'</tbody></table>';
+  }
   const allHs=Object.values(hp).sort((a,b)=>b.pts-a.pts||b.runs-a.runs);
   // 馬ごとのレース一覧を構築（内訳展開用）
   const hraces={};
@@ -724,12 +757,19 @@ function renderRanking(){
           +'<tbody>'+detailRows+'</tbody>'
           +'</table></td></tr>';
       }
+      const rc2=rankMeta[i]; // i=0,1,2 → 1st,2nd,3rd（馬は同点考慮せず順位＝インデックス）
+      const rowBg2=rc2?rc2.rowBg:(i%2===1?'#f9fdf9':'#fff');
+      const leftBorder2=rc2?`border-left:3px solid ${rc2.border};`:'border-left:3px solid transparent;';
+      const badge2=rc2
+        ?`<span style="display:inline-block;background:${rc2.bg};color:${rc2.color};border-radius:6px;padding:3px 9px;font-size:0.78rem;font-weight:bold;">${rc2.label}</span>`
+        :`<span style="color:#9ca3af;font-size:12px;">${i+1}</span>`;
+      const ptSize2=i===0?'17px':i<=2?'14px':'13px';
       const seisekiBtn=hasRaces?'<button onclick="event.stopPropagation();toggleDetail(\'hd-'+hid+'\',\'sb-'+hid+'\')" id="sb-'+hid+'" style="font-size:11px;padding:2px 7px;border:1px solid #a7f3d0;border-radius:4px;background:#ecfdf5;color:#065f46;cursor:pointer;white-space:nowrap;">成績▶</button>':'';
-      return '<tr style="background:'+(i%2===1?'#f9fdf9':'#fff')+';">'
-        +'<td style="color:#6b7280;font-size:12px;text-align:center;">'+(i+1)+'</td>'
-        +'<td style="font-weight:600;font-size:13px;color:#222;white-space:nowrap;">'+(hObj?hObj.name:h.name)+'</td>'
+      return '<tr style="background:'+rowBg2+';'+leftBorder2+'">'
+        +'<td style="text-align:center;padding:10px 8px;">'+badge2+'</td>'
+        +'<td style="font-weight:600;font-size:'+(i<=2?'14px':'13px')+';color:#222;white-space:nowrap;">'+(hObj?hObj.name:h.name)+'</td>'
         +'<td style="color:#6b7280;font-size:12px;white-space:nowrap;">'+(o?o.name:'--')+'</td>'
-        +'<td style="text-align:right;'+ptColor+'">'+(h.pts>0?'+':'')+h.pts+'pt</td>'
+        +'<td style="text-align:right;'+ptColor+';font-size:'+ptSize2+';font-weight:700;white-space:nowrap;">'+(h.pts>0?'+':'')+h.pts+'pt</td>'
         +'<td style="white-space:nowrap;">'+seisekiBtn+'</td>'
         +'</tr>'+detailHtml;
     }).join('')+'</tbody></table>';
