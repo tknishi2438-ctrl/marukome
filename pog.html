@@ -289,6 +289,10 @@ tr:last-child td{border-bottom:none;}
   <div class="metrics" id="metrics"></div>
   <div class="card"><div class="card-title">指名者別ランキング</div><div id="owner-rank"></div></div>
   <div class="card"><div class="card-title">馬別獲得ポイント</div><div id="horse-rank"></div></div>
+  <div class="card" id="archive-race-card" style="display:none;">
+    <div class="card-title">📋 レース履歴（読み取り専用）</div>
+    <div style="overflow-x:auto;"><div id="archive-race-hist"></div></div>
+  </div>
 </div>
 
 <div id="race" class="sec">
@@ -1241,9 +1245,11 @@ function updateSeasonSelector(){
 function onSeasonSelectorChange(){
   const val=document.getElementById('season-selector').value;
   const badge=document.getElementById('archive-badge');
+  const archiveCard=document.getElementById('archive-race-card');
   if(val==='current'){
     viewingArchive=null;
     badge.style.display='none';
+    archiveCard.style.display='none';
     renderRanking();
   } else {
     badge.style.display='inline-block';
@@ -1264,6 +1270,19 @@ function renderRankingWithData(data){
   const saved=S;
   S=data;
   renderRanking();
+  S=saved;
+  renderArchiveRaceHist(data);
+  document.getElementById('archive-race-card').style.display='block';
+}
+
+function renderArchiveRaceHist(data){
+  const el=document.getElementById('archive-race-hist');
+  if(!data.races||!data.races.length){el.innerHTML='<div class="empty">レース結果がありません</div>';return;}
+  const gl={G1:'G1',G2:'G2',G3:'G3',OP:'OP/Listed',flat:'平場',maiden:'未勝利',newface:'新馬'};
+  const rl={JRA:'JRA',local:'地方',overseas:'海外'};
+  const saved=S; S=data;
+  const sorted=[...data.races].sort((a,b)=>b.date.localeCompare(a.date));
+  el.innerHTML=`<table class="horse-table" style="width:100%;"><thead><tr><th style="white-space:nowrap;">日付</th><th>レース名</th><th style="white-space:nowrap;">馬名</th><th style="white-space:nowrap;">着順</th><th style="white-space:nowrap;">pt</th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#f9fdf9':'#fff'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td>${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span> <span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${h?h.name:'不明'}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td></tr>`;}).join('')}</tbody></table>`;
   S=saved;
 }
 
