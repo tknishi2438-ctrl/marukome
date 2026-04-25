@@ -241,9 +241,12 @@ tr:last-child td{border-bottom:none;}
       <div><label>馬主</label><input type="text" id="edit-owner2"></div>
       <div><label>生産者</label><input type="text" id="edit-breeder"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeEditModal()">キャンセル</button>
-      <button class="btn btn-p" onclick="saveEditHorse()">保存する</button>
+    <div class="modal-footer" style="justify-content:space-between;">
+      <button class="btn btn-d" onclick="delHorseFromModal()" style="border:1px solid #c0392b;">🗑 削除</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" onclick="closeEditModal()">キャンセル</button>
+        <button class="btn btn-p" onclick="saveEditHorse()">保存する</button>
+      </div>
     </div>
   </div>
 </div>
@@ -906,9 +909,7 @@ function renderHorseList(){
         <td style="text-align:right;${ptColor};white-space:nowrap;">${ptStr}pt</td>
         <td style="white-space:nowrap;padding-right:8px;">
           <button onclick="event.stopPropagation();toggleActionBtns('hl-act-${h.id}','hl-tog-${h.id}')" id="hl-tog-${h.id}" style="font-size:11px;padding:2px 7px;border:1px solid #d4e8d4;border-radius:4px;background:#f0f8f4;color:#006633;cursor:pointer;">▶</button>
-          <span id="hl-act-${h.id}" style="display:none;">${actionBtns}</span>
-          <button class="btn-edit" onclick="event.stopPropagation();editHorse(${h.id})">編集</button>
-          <button class="btn btn-d" onclick="event.stopPropagation();delHorse(${h.id})">×</button>
+          <span id="hl-act-${h.id}" style="display:none;">${actionBtns}<button class="btn-edit" onclick="event.stopPropagation();editHorse(${h.id})">編集</button> </span>
         </td>
       </tr>${seisekiHtml}${infoHtml}`;
     }).join('');
@@ -935,6 +936,14 @@ function delHorse(id){
   if(!confirm('この馬を削除しますか？')) return;
   S.horses=S.horses.filter(h=>h.id!==id);
   saveData();
+  renderHorseList();
+}
+function delHorseFromModal(){
+  const id=parseInt(document.getElementById('edit-id').value);
+  if(!confirm('この馬を削除しますか？')) return;
+  S.horses=S.horses.filter(h=>h.id!==id);
+  saveData();
+  closeEditModal();
   renderHorseList();
 }
 function editHorse(id){
