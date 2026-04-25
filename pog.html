@@ -22,6 +22,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const POG_REF = db.collection('g1app').doc('pog_data');
+const POG_META_REF = db.collection('g1app').doc('pog_meta');
 </script>
 
 <style>
@@ -278,6 +279,13 @@ tr:last-child td{border-bottom:none;}
 </div>
 
 <div id="ranking" class="sec active">
+  <div style="background:#fff;border-radius:8px;padding:10px 16px;margin-bottom:12px;border:1px solid #d4e8d4;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <span style="font-size:0.82rem;color:#555;white-space:nowrap;">📅 シーズン：</span>
+    <select id="season-selector" onchange="onSeasonSelectorChange()" style="width:auto;flex:1;max-width:260px;">
+      <option value="current">現在（第31回）</option>
+    </select>
+    <span id="archive-badge" class="badge b-warn" style="display:none;">📦 アーカイブ表示中</span>
+  </div>
   <div class="metrics" id="metrics"></div>
   <div class="card"><div class="card-title">指名者別ランキング</div><div id="owner-rank"></div></div>
   <div class="card"><div class="card-title">馬別獲得ポイント</div><div id="horse-rank"></div></div>
@@ -453,6 +461,14 @@ tr:last-child td{border-bottom:none;}
       <button class="btn btn-p" onclick="importJSON()">インポートする</button>
     </div>
   </div>
+  <div class="card" style="border-color:#f5d0a9;">
+    <div class="card-title">🔄 新シーズンを開始する</div>
+    <div class="card-sub">現在のシーズンのデータをアーカイブして、次のシーズンをスタートします。<br>指名馬・レース結果はリセットされますが、参加者はそのまま引き継がれます。</div>
+    <div id="new-season-info" style="margin:8px 0;font-size:0.82rem;color:#006633;font-weight:500;"></div>
+    <div style="margin-top:8px;">
+      <button class="btn" style="color:#c05000;border-color:#f5a060;" onclick="startNewSeason()">新シーズンを開始する →</button>
+    </div>
+  </div>
   <div class="card">
     <div class="card-title">データのリセット</div>
     <div class="card-sub">すべてのデータを削除して初期状態に戻します。この操作は元に戻せません。</div>
@@ -544,6 +560,9 @@ DEFAULT_DATA.horses.forEach(def => {
   }
 });
 
+
+let pogMeta = { archives: [] };
+let viewingArchive = null;
 
 function saveData(){
   POG_REF.set(JSON.parse(JSON.stringify(S))).catch(e => console.error('Firestore save error:', e));
@@ -1208,6 +1227,77 @@ function updateEditAutoSpIndicators(){
   document.getElementById('edit-sp-chu').checked=(place==='1'&&!!(horse&&horse.chu));
 }
 
+// ===== シーズン管理 =====
+function updateSeasonSelector(){
+  const sel=document.getElementById('season-selector');
+  if(!sel) return;
+  const cur=`<option value="current">現在（第${S.round||31}回）</option>`;
+  const past=(pogMeta.archives||[]).slice().reverse().map(a=>`<option value="${a.round}">${a.title}</option>`).join('');
+  sel.innerHTML=cur+past;
+  const nsi=document.getElementById('new-season-info');
+  if(nsi) nsi.textContent=`現在のシーズン：第${S.round||31}回`;
+}
+
+function onSeasonSelectorChange(){
+  const val=document.getElementById('season-selector').value;
+  const badge=document.getElementById('archive-badge');
+  if(val==='current'){
+    viewingArchive=null;
+    badge.style.display='none';
+    renderRanking();
+  } else {
+    badge.style.display='inline-block';
+    db.collection('g1app').doc('pog_s'+val).get().then(snap=>{
+      if(snap.exists){
+        viewingArchive=snap.data();
+        renderRankingWithData(viewingArchive);
+      } else {
+        alert('アーカイブデータが見つかりませんでした');
+        document.getElementById('season-selector').value='current';
+        badge.style.display='none';
+      }
+    }).catch(e=>{ console.error(e); alert('データの読み込みに失敗しました'); });
+  }
+}
+
+function renderRankingWithData(data){
+  const saved=S;
+  S=data;
+  renderRanking();
+  S=saved;
+}
+
+function startNewSeason(){
+  const currentRound=S.round||31;
+  const newRound=currentRound+1;
+  const archiveTitle=`第${currentRound}回 ${S.name||'マルコメ杯POG'}`;
+  if(!confirm(`${archiveTitle}のデータをアーカイブして、第${newRound}回を開始しますか？\n\n✅ 引き継ぐもの：参加者\n🗑 リセットするもの：指名馬・レース結果\n\nこの操作は元に戻せません。`)) return;
+
+  const archiveData=JSON.parse(JSON.stringify(S));
+  const archiveRef=db.collection('g1app').doc('pog_s'+currentRound);
+
+  archiveRef.set(archiveData).then(()=>{
+    if(!pogMeta.archives) pogMeta.archives=[];
+    pogMeta.archives.push({ round:currentRound, title:archiveTitle, archivedAt:new Date().toISOString().slice(0,10) });
+    return POG_META_REF.set(pogMeta);
+  }).then(()=>{
+    S.round=newRound;
+    S.horses=[];
+    S.races=[];
+    S.nHId=1;
+    S.nRId=1;
+    saveData();
+    document.getElementById('pog-title').textContent=`第${S.round}回 ${S.name}`;
+    viewingArchive=null;
+    updateSeasonSelector();
+    renderRanking();
+    alert(`第${newRound}回を開始しました！\n指名馬の登録を始めてください。`);
+  }).catch(e=>{
+    console.error('アーカイブエラー:', e);
+    alert('エラーが発生しました。もう一度お試しください。');
+  });
+}
+
 function initApp(){
   const oc=document.getElementById('ow-count');
   for(let i=1;i<=20;i++){const o=document.createElement('option');o.value=i;o.textContent=i+'頭';if(i===15)o.selected=true;oc.appendChild(o);}
@@ -1226,11 +1316,12 @@ function initApp(){
   }
   document.getElementById('pog-title').textContent=`第${S.round}回 ${S.name}`;
   if(S.start&&S.end) document.getElementById('meta-period').textContent=`集計期間：${S.start} 〜 ${S.end}`;
+  updateSeasonSelector();
   renderRanking();
 }
 
 // Firestoreからデータを読み込んでからアプリ初期化
-POG_REF.get().then(docSnap => {
+Promise.all([POG_REF.get(), POG_META_REF.get()]).then(([docSnap, metaSnap]) => {
   if (docSnap.exists) {
     S = docSnap.data();
     // DEFAULT_DATAから血統情報を補完
@@ -1246,6 +1337,10 @@ POG_REF.get().then(docSnap => {
         if (!h.jraUrl  && def.jraUrl)  h.jraUrl  = def.jraUrl;
       }
     });
+  }
+  if (metaSnap.exists) {
+    pogMeta = metaSnap.data();
+    if (!pogMeta.archives) pogMeta.archives = [];
   }
   // 未登録レースの一括追加（2026-04-22）
   (function addMissingRaces(){
