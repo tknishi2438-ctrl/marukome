@@ -189,9 +189,12 @@ tr:last-child td{border-bottom:none;}
         <div class="chk-row"><input type="checkbox" id="edit-sp-chu" disabled><label style="margin:0;color:#9ca3af;">抽せん馬勝利　+5pt　<small>自動</small></label></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeEditRaceModal()">キャンセル</button>
-      <button class="btn btn-p" onclick="saveEditRace()">保存する</button>
+    <div class="modal-footer" style="justify-content:space-between;">
+      <button class="btn btn-d" onclick="delRaceFromModal()" style="border:1px solid #c0392b;">🗑 削除</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" onclick="closeEditRaceModal()">キャンセル</button>
+        <button class="btn btn-p" onclick="saveEditRace()">保存する</button>
+      </div>
     </div>
   </div>
 </div>
@@ -203,9 +206,12 @@ tr:last-child td{border-bottom:none;}
     <input type="hidden" id="edit-owner-id">
     <div style="margin-bottom:8px;"><label>参加者名</label><input type="text" id="edit-owner-name"></div>
     <div><label>指名頭数</label><select id="edit-owner-count"></select></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeEditOwnerModal()">キャンセル</button>
-      <button class="btn btn-p" onclick="saveEditOwner()">保存する</button>
+    <div class="modal-footer" style="justify-content:space-between;">
+      <button class="btn btn-d" onclick="delOwnerFromModal()" style="border:1px solid #c0392b;">🗑 削除</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" onclick="closeEditOwnerModal()">キャンセル</button>
+        <button class="btn btn-p" onclick="saveEditOwner()">保存する</button>
+      </div>
     </div>
   </div>
 </div>
@@ -793,12 +799,20 @@ function addOwner(){
 }
 function renderOwnerList(){
   document.getElementById('owner-list').innerHTML=!S.owners.length?'<div class="empty">参加者が登録されていません</div>':
-    `<table class="horse-table"><thead><tr><th>参加者名</th><th>指名頭数</th><th></th></tr></thead><tbody>${S.owners.map(o=>`<tr><td style="font-weight:500;">${o.name}</td><td style="color:#6b7280;">${o.count}頭</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editOwner(${o.id})">編集</button> <button class="btn btn-d" onclick="delOwner(${o.id})">×</button></td></tr>`).join('')}</tbody></table>`;
+    `<table class="horse-table"><thead><tr><th>参加者名</th><th>指名頭数</th><th></th></tr></thead><tbody>${S.owners.map(o=>`<tr><td style="font-weight:500;">${o.name}</td><td style="color:#6b7280;">${o.count}頭</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editOwner(${o.id})">編集</button></td></tr>`).join('')}</tbody></table>`;
 }
 function delOwner(id){
   if(!confirm('この参加者を削除しますか？')) return;
   S.owners=S.owners.filter(o=>o.id!==id);
   saveData();
+  renderOwnerList();
+}
+function delOwnerFromModal(){
+  const id=parseInt(document.getElementById('edit-owner-id').value);
+  if(!confirm('この参加者を削除しますか？')) return;
+  S.owners=S.owners.filter(o=>o.id!==id);
+  saveData();
+  closeEditOwnerModal();
   renderOwnerList();
 }
 function editOwner(id){
@@ -1018,12 +1032,21 @@ function renderRaceHist(){
   const gl={G1:'G1',G2:'G2',G3:'G3',OP:'OP/Listed',flat:'平場',maiden:'未勝利',newface:'新馬'};
   const rl={JRA:'JRA',local:'地方',overseas:'海外'};
   const sorted=[...S.races].sort((a,b)=>b.date.localeCompare(a.date));
-  el.innerHTML=`<table class="horse-table" style="width:100%;"><thead><tr><th style="white-space:nowrap;">日付</th><th>レース名</th><th style="white-space:nowrap;">馬名</th><th style="white-space:nowrap;">着順</th><th style="white-space:nowrap;">pt</th><th></th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#f9fdf9':'#fff'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td>${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span> <span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${h?h.name:'不明'}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editRace(${r.id})">編集</button> <button class="btn btn-d" onclick="delRace(${r.id})">×</button></td></tr>`;}).join('')}</tbody></table>`;
+  el.innerHTML=`<table class="horse-table" style="width:100%;"><thead><tr><th style="white-space:nowrap;">日付</th><th>レース名</th><th style="white-space:nowrap;">馬名</th><th style="white-space:nowrap;">着順</th><th style="white-space:nowrap;">pt</th><th></th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#f9fdf9':'#fff'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td>${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span> <span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${h?h.name:'不明'}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editRace(${r.id})">編集</button></td></tr>`;}).join('')}</tbody></table>`;
 }
 function delRace(id){
   S.races=S.races.filter(r=>r.id!==id);
   saveData();
   renderRaceHist();
+}
+function delRaceFromModal(){
+  const id=parseInt(document.getElementById('edit-race-id').value);
+  if(!confirm('このレース結果を削除しますか？')) return;
+  S.races=S.races.filter(r=>r.id!==id);
+  saveData();
+  closeEditRaceModal();
+  renderRaceHist();
+  if(document.getElementById('horses').classList.contains('active')) renderHorseList();
 }
 function editRace(id){
   const r=S.races.find(r=>r.id===id);
