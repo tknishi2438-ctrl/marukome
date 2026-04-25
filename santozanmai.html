@@ -417,6 +417,15 @@
 
 <!-- ========== Tab: 成績（ランキング＋履歴） ========== -->
 <div id="tab-seiseki" class="content active">
+
+    <!-- シーズン絞り込み（ランキング・履歴共通） -->
+    <div class="filter-bar" style="margin-bottom:12px;">
+        <label>シーズン：</label>
+        <select id="historyFilter" onchange="onSeasonFilterChange()">
+            <option value="all">全期間</option>
+        </select>
+    </div>
+
     <div class="card">
         <h2>🏆 ランキング</h2>
         <p class="text-muted" style="margin-bottom:10px; font-size:0.78rem;">
@@ -437,12 +446,6 @@
 
     <div class="card">
         <h2>📋 レース履歴</h2>
-        <div class="filter-bar">
-            <label>シーズン絞り込み：</label>
-            <select id="historyFilter" onchange="renderHistory()">
-                <option value="all">全期間</option>
-            </select>
-        </div>
         <div id="historyList"></div>
     </div>
     <div class="flex-gap">
@@ -1624,19 +1627,39 @@ function deleteRace() {
 //  ランキング表示
 // ============================================================
 
+/** フィルター変更時にランキング・特別レース・履歴をまとめて更新 */
+function onSeasonFilterChange() {
+    renderRanking();
+    renderHistory();
+}
+
+/** 現在のフィルター選択値を返す。"all" の場合は現在の大会シーズンキーを返す */
+function getSelectedSeasonKey() {
+    const val = (document.getElementById('historyFilter') || {}).value || 'all';
+    return val === 'all' ? null : val;
+}
+
 function renderRanking() {
     const el = document.getElementById('rankingList');
-    const currentKey = toSeasonKey(tournamentSettings.year, tournamentSettings.season);
+    const labelEl = document.getElementById('rankingSeasonLabel');
+    const selectedKey = getSelectedSeasonKey();
+
+    // 「全期間」選択時はランキング非表示
+    if (!selectedKey) {
+        if (labelEl) labelEl.textContent = '';
+        el.innerHTML = '<p class="text-muted text-center" style="padding:20px;">シーズンを選択するとランキングが表示されます</p>';
+        renderSpecialRace(null);
+        return;
+    }
 
     // シーズンラベルを更新
-    const labelEl = document.getElementById('rankingSeasonLabel');
-    if (labelEl) labelEl.textContent = seasonLabel(tournamentSettings.year, tournamentSettings.season);
+    if (labelEl) labelEl.textContent = selectedKey;
 
-    // 現在シーズンの通常レースのみ集計（特別レース除外）
-    const seasonRaces = races.filter(r => r.seasonKey === currentKey && !r.isSpecial);
+    // 選択シーズンの通常レースのみ集計（特別レース除外）
+    const seasonRaces = races.filter(r => r.seasonKey === selectedKey && !r.isSpecial);
 
     // 特別レース表示を更新
-    renderSpecialRace(currentKey);
+    renderSpecialRace(selectedKey);
 
     if (seasonRaces.length === 0) {
         el.innerHTML = '<p class="text-muted text-center" style="padding:20px;">このシーズンの通常レースはまだありません</p>';
@@ -1697,13 +1720,15 @@ function renderRanking() {
     `;
 }
 
-/** 現在シーズンの特別レース結果を表示 */
+/** 指定シーズンの特別レース結果を表示 */
 function renderSpecialRace(currentKey) {
     const card    = document.getElementById('specialRaceCard');
     const content = document.getElementById('specialRaceContent');
     const nameLabel = document.getElementById('specialRaceNameLabel');
 
-    const specialRaces = races.filter(r => r.seasonKey === currentKey && r.isSpecial);
+    const specialRaces = currentKey
+        ? races.filter(r => r.seasonKey === currentKey && r.isSpecial)
+        : [];
     if (specialRaces.length === 0) {
         card.style.display = 'none';
         return;
