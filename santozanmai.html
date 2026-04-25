@@ -491,23 +491,17 @@
             登録後はレース入力画面でワンタップ入力できます。
         </p>
 
-        <!-- 取得ボタン群 -->
-        <div class="flex-gap" style="margin-bottom:8px;">
-            <button class="btn btn-secondary btn-full" id="btnWiki" onclick="fetchG1FromWikipedia()">
-                🌐 Wikipediaから取得
-            </button>
-            <button class="btn btn-secondary btn-full" onclick="loadDefaultG1List()">
-                📋 定番リストを使う
-            </button>
+        <!-- 手入力フォーム -->
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <input type="text" id="manualRaceName" placeholder="レース名を入力（例：天皇賞（春））"
+                   style="flex:1;" onkeydown="if(event.key==='Enter') addManualRace()" />
+            <button class="btn btn-success" onclick="addManualRace()" style="white-space:nowrap;">＋ 追加</button>
         </div>
-        <p class="text-muted" style="font-size:0.75rem; margin-bottom:8px;">
-            ※ Wikipedia取得は「<span id="wikiTargetLabel"></span>」ページを参照します
-        </p>
 
-        <!-- ローディング -->
-        <div id="scheduleLoading" style="display:none; color:#ffd700; font-size:0.85rem; margin-bottom:8px;">
-            <span class="spinner"></span>取得中...
-        </div>
+        <!-- 定番リストボタン -->
+        <button class="btn btn-secondary btn-full" onclick="loadDefaultG1List()" style="margin-bottom:8px;">
+            📋 定番リストを使う
+        </button>
 
         <!-- 取得結果チェックリスト -->
         <div id="fetchResult" style="display:none;">
@@ -811,98 +805,18 @@ function saveSchedule() {
     saveToFirestore({ schedule: g1Schedule });
 }
 
-/**
- * Wikipediaから対象年のG1レース一覧を取得
- * 参照ページ: https://ja.wikipedia.org/wiki/○○年の競馬
- * Wikipedia は origin=* でCORSを許可しているため直接 fetch 可能
- */
-async function fetchG1FromWikipedia() {
-    const year = tournamentSettings.year;
-    const pageName = `${year}年の競馬`;
-
-    setScheduleLoading(true);
-    document.getElementById('fetchResult').style.display = 'none';
-
-    try {
-        // Wikipedia MediaWiki API（CORS対応）
-        const apiUrl = `https://ja.wikipedia.org/w/api.php?` +
-            `action=parse&page=${encodeURIComponent(pageName)}&prop=text&format=json&origin=*`;
-
-        const res = await fetch(apiUrl);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const json = await res.json();
-        if (json.error) throw new Error(json.error.info || 'Wikipediaエラー');
-
-        const rawHtml = json.parse.text['*'];
-
-        // HTML をパースして G1 レース名を抽出
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(rawHtml, 'text/html');
-        const foundRaces = extractG1NamesFromWikiDoc(doc);
-
-        if (foundRaces.length === 0) throw new Error('G1レースが見つかりませんでした');
-
-        showFetchedRaces(foundRaces, `Wikipedia「${pageName}」より ${foundRaces.length}件取得`);
-
-    } catch (e) {
-        alert(`取得に失敗しました:\n${e.message}\n\n「定番リストを使う」をお試しください。`);
-    } finally {
-        setScheduleLoading(false);
-    }
-}
-
-/**
- * Wikipedia の parse HTML から G1 レース名を抽出する
- * - wikitable の行で "GⅠ" "GI" "G1" が含まれるものを対象
- * - レース名はその行の最初のリンクテキストまたは最初のセル
- */
-function extractG1NamesFromWikiDoc(doc) {
-    const G1_PATTERN = /^G[Ⅰ I1Ｉ１]$/;  // GⅠ / GI / G1 などにマッチ
-    const races = new Set();
-
-    // すべての <td> を舐めて grade セルを探す
-    doc.querySelectorAll('td').forEach(td => {
-        const text = td.textContent.trim().replace(/\s+/g, '');
-        if (G1_PATTERN.test(text) || text === 'GⅠ' || text === 'GI' || text === 'G1') {
-            const row = td.closest('tr');
-            if (!row) return;
-
-            // 同じ行にある最初のリンクをレース名候補とする
-            const link = row.querySelector('a');
-            if (link) {
-                const name = link.textContent.trim();
-                // 短すぎる・数字始まり・会場名等を除外
-                if (name.length >= 3 && !/^\d/.test(name) && !name.includes('年')) {
-                    races.add(name);
-                    return;
-                }
-            }
-            // リンクがなければ最初のセルのテキスト
-            const firstTd = row.querySelector('td');
-            if (firstTd && firstTd !== td) {
-                const name = firstTd.textContent.trim();
-                if (name.length >= 3 && !/^\d/.test(name)) races.add(name);
-            }
-        }
-    });
-
-    // テキスト内に "GⅠ" を含む見出しからも拾う（ページ構成によって異なる）
-    if (races.size === 0) {
-        doc.querySelectorAll('li, p').forEach(el => {
-            if (/GⅠ|G1|GI/.test(el.textContent)) {
-                const link = el.querySelector('a');
-                if (link) {
-                    const name = link.textContent.trim();
-                    if (name.length >= 3 && !/^\d/.test(name) && !name.includes('年')) {
-                        races.add(name);
-                    }
-                }
-            }
-        });
-    }
-
-    return [...races];
+/** レース名を手入力してスケジュールに追加 */
+function addManualRace() {
+    const input = document.getElementById('manualRaceName');
+    const name = input.value.trim();
+    if (!name) { alert('レース名を入力してください'); return; }
+    if (g1Schedule.includes(name)) { alert('すでに登録済みです'); return; }
+    g1Schedule.push(name);
+    saveSchedule();
+    renderScheduleInSettings();
+    renderScheduleChips();
+    input.value = '';
+    input.focus();
 }
 
 /** 定番リストから取得してチェックリスト表示 */
@@ -1023,16 +937,6 @@ function fillRaceName(name) {
 }
 
 /** ローディング表示切替 */
-function setScheduleLoading(on) {
-    document.getElementById('scheduleLoading').style.display = on ? '' : 'none';
-    document.getElementById('btnWiki').disabled = on;
-}
-
-/** 設定タブを開いたときに Wikipedia 対象ラベルを更新 */
-function updateWikiTargetLabel() {
-    const el = document.getElementById('wikiTargetLabel');
-    if (el) el.textContent = `${tournamentSettings.year}年の競馬`;
-}
 
 // ============================================================
 //  馬名プリセット管理
@@ -1860,7 +1764,6 @@ function showTab(tab) {
         populateSettingsForm();
         applySettingsToUI();
         renderScheduleInSettings();
-        updateWikiTargetLabel();
     }
     // レース入力タブを開くときは設定から参加者名＋スケジュールチップを反映
     if (tab === 'race') {
