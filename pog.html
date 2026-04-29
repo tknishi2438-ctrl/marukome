@@ -272,7 +272,7 @@ tr:last-child td{border-bottom:none;}
 <div class="tabs">
   <button class="tab active" onclick="sw('ranking',this)">ランキング</button>
   <button class="tab" onclick="sw('horses',this)">指名馬</button>
-  <button class="tab" onclick="sw('race',this)">レース入力</button>
+  <button class="tab" onclick="sw('race',this)">レース結果</button>
   <button class="tab" onclick="sw('owners',this)">参加者設定</button>
   <button class="tab" onclick="sw('settings',this)">大会設定</button>
   <button class="tab" onclick="sw('datamanage',this)">データ管理</button>
@@ -296,56 +296,61 @@ tr:last-child td{border-bottom:none;}
 </div>
 
 <div id="race" class="sec">
-  <div class="card">
-    <div class="card-title">レース結果を入力</div>
-    <div id="race-alert"></div>
-    <div class="g3">
-      <div><label>レース名</label><input type="text" id="r-name" placeholder="例：皐月賞"></div>
-      <div><label>グレード</label>
-        <select id="r-grade">
-          <option value="G1">G1</option>
-          <option value="G2">G2</option>
-          <option value="G3">G3</option>
-          <option value="OP">オープン／リステッド</option>
-          <option value="flat" selected>平場（1〜3勝クラス）</option>
-          <option value="maiden">未勝利</option>
-          <option value="newface">新馬</option>
-        </select>
+  <div class="card" style="padding:0;">
+    <button onclick="toggleRaceForm()" id="race-form-toggle" style="width:100%;text-align:left;background:none;border:none;padding:14px 16px;font-size:1rem;font-weight:bold;color:#006633;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+      <span>レース結果を入力</span>
+      <span id="race-form-arrow" style="font-size:0.85rem;transition:transform 0.2s;">▶</span>
+    </button>
+    <div id="race-form-body" style="display:none;padding:0 16px 16px;">
+      <div id="race-alert"></div>
+      <div class="g3">
+        <div><label>レース名</label><input type="text" id="r-name" placeholder="例：皐月賞"></div>
+        <div><label>グレード</label>
+          <select id="r-grade">
+            <option value="G1">G1</option>
+            <option value="G2">G2</option>
+            <option value="G3">G3</option>
+            <option value="OP">オープン／リステッド</option>
+            <option value="flat" selected>平場（1〜3勝クラス）</option>
+            <option value="maiden">未勝利</option>
+            <option value="newface">新馬</option>
+          </select>
+        </div>
+        <div><label>レース日</label><input type="date" id="r-date"></div>
       </div>
-      <div><label>レース日</label><input type="date" id="r-date"></div>
+      <div class="g3" style="margin-top:10px;">
+        <div><label>馬名</label><select id="r-horse"><option value="">-- 馬を選択 --</option></select></div>
+        <div><label>着順</label>
+          <select id="r-place">
+            <option value="1">1着</option><option value="2">2着</option><option value="3">3着</option>
+            <option value="4">4着</option><option value="5">5着</option><option value="6">6着</option>
+            <option value="7">7着</option><option value="8">8着</option><option value="9">9着以下</option>
+            <option value="last">最下位（ドンジリ）</option>
+          </select>
+        </div>
+        <div><label>開催区分</label>
+          <select id="r-region">
+            <option value="JRA">JRA（中央）</option>
+            <option value="local">地方競馬</option>
+            <option value="overseas">海外</option>
+          </select>
+        </div>
+      </div>
+      <div class="sp-box">
+        <div class="sp-label">特別ポイント（該当する場合にチェック）</div>
+        <div class="sp-grid">
+          <div class="chk-row"><input type="checkbox" id="sp-record"><label style="margin:0;">レコード勝ち　+5pt</label></div>
+          <div class="chk-row"><input type="checkbox" id="sp-tansho"><label style="margin:0;">単勝万券　+10pt</label></div>
+          <div class="chk-row"><input type="checkbox" id="sp-umaren"><label style="margin:0;">馬連万券　+5pt</label></div>
+          <div class="chk-row"><input type="checkbox" id="sp-umatan"><label style="margin:0;">馬単万券　+5pt</label></div>
+          <div class="chk-row"><input type="checkbox" id="sp-derby" onchange="document.getElementById('sp-g1x2').disabled=this.checked;if(this.checked)document.getElementById('sp-g1x2').checked=false;"><label style="margin:0;">ダービー勝ち　+50pt</label></div>
+          <div class="chk-row"><input type="checkbox" id="sp-g1x2"><label style="margin:0;">同一馬G1・2勝目以降（ダービー除く）　+50pt</label></div>
+          <div class="chk-row"><input type="checkbox" id="sp-donziri" disabled><label style="margin:0;color:#9ca3af;">最下位（ドンジリ）　−3pt　<small>自動</small></label></div>
+          <div class="chk-row"><input type="checkbox" id="sp-chu" disabled><label style="margin:0;color:#9ca3af;">抽せん馬勝利　+5pt　<small>自動</small></label></div>
+        </div>
+      </div>
+      <div style="margin-top:12px;"><button class="btn btn-p" onclick="addRace()">登録する</button></div>
     </div>
-    <div class="g3" style="margin-top:10px;">
-      <div><label>馬名</label><select id="r-horse"><option value="">-- 馬を選択 --</option></select></div>
-      <div><label>着順</label>
-        <select id="r-place">
-          <option value="1">1着</option><option value="2">2着</option><option value="3">3着</option>
-          <option value="4">4着</option><option value="5">5着</option><option value="6">6着</option>
-          <option value="7">7着</option><option value="8">8着</option><option value="9">9着以下</option>
-          <option value="last">最下位（ドンジリ）</option>
-        </select>
-      </div>
-      <div><label>開催区分</label>
-        <select id="r-region">
-          <option value="JRA">JRA（中央）</option>
-          <option value="local">地方競馬</option>
-          <option value="overseas">海外</option>
-        </select>
-      </div>
-    </div>
-    <div class="sp-box">
-      <div class="sp-label">特別ポイント（該当する場合にチェック）</div>
-      <div class="sp-grid">
-        <div class="chk-row"><input type="checkbox" id="sp-record"><label style="margin:0;">レコード勝ち　+5pt</label></div>
-        <div class="chk-row"><input type="checkbox" id="sp-tansho"><label style="margin:0;">単勝万券　+10pt</label></div>
-        <div class="chk-row"><input type="checkbox" id="sp-umaren"><label style="margin:0;">馬連万券　+5pt</label></div>
-        <div class="chk-row"><input type="checkbox" id="sp-umatan"><label style="margin:0;">馬単万券　+5pt</label></div>
-        <div class="chk-row"><input type="checkbox" id="sp-derby" onchange="document.getElementById('sp-g1x2').disabled=this.checked;if(this.checked)document.getElementById('sp-g1x2').checked=false;"><label style="margin:0;">ダービー勝ち　+50pt</label></div>
-        <div class="chk-row"><input type="checkbox" id="sp-g1x2"><label style="margin:0;">同一馬G1・2勝目以降（ダービー除く）　+50pt</label></div>
-        <div class="chk-row"><input type="checkbox" id="sp-donziri" disabled><label style="margin:0;color:#9ca3af;">最下位（ドンジリ）　−3pt　<small>自動</small></label></div>
-        <div class="chk-row"><input type="checkbox" id="sp-chu" disabled><label style="margin:0;color:#9ca3af;">抽せん馬勝利　+5pt　<small>自動</small></label></div>
-      </div>
-    </div>
-    <div style="margin-top:12px;"><button class="btn btn-p" onclick="addRace()">登録する</button></div>
   </div>
   <div class="card"><div class="card-title">登録済みレース結果</div><div style="overflow-x:auto;"><div id="race-hist"></div></div></div>
 </div>
@@ -876,6 +881,14 @@ function addHorse(){
   saveData();
   clearHorseForm();
   renderHorseList();
+}
+
+function toggleRaceForm(){
+  const body=document.getElementById('race-form-body');
+  const arrow=document.getElementById('race-form-arrow');
+  const open=body.style.display==='none';
+  body.style.display=open?'block':'none';
+  arrow.style.transform=open?'rotate(90deg)':'';
 }
 
 function toggleHorseForm(){
