@@ -271,7 +271,7 @@ tr:last-child td{border-bottom:none;}
 
 <div class="tabs">
   <button class="tab active" onclick="sw('ranking',this)">ランキング</button>
-  <button class="tab" onclick="sw('horses',this)">指名馬登録</button>
+  <button class="tab" onclick="sw('horses',this)">指名馬</button>
   <button class="tab" onclick="sw('race',this)">レース入力</button>
   <button class="tab" onclick="sw('owners',this)">参加者設定</button>
   <button class="tab" onclick="sw('settings',this)">大会設定</button>
@@ -351,38 +351,43 @@ tr:last-child td{border-bottom:none;}
 </div>
 
 <div id="horses" class="sec">
-  <div class="card">
-    <div class="card-title">馬を登録する</div>
-    <div id="h-alert"></div>
-    <div class="g2">
-      <div><label>馬名</label><input type="text" id="h-name" placeholder="例：ベレシート"></div>
-      <div><label>指名者</label><select id="h-owner"><option value="">-- 指名者を選択 --</option></select></div>
-    </div>
-    <div class="g4" style="margin-top:8px;">
-      <div><label>毛色</label>
-        <select id="h-color">
-          <option>鹿毛</option><option>黒鹿毛</option><option>青鹿毛</option>
-          <option>栗毛</option><option>栃栗毛</option><option>青毛</option><option>芦毛</option><option>白毛</option>
-        </select>
+  <div class="card" style="padding:0;">
+    <button onclick="toggleHorseForm()" id="horse-form-toggle" style="width:100%;text-align:left;background:none;border:none;padding:14px 16px;font-size:1rem;font-weight:bold;color:#006633;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+      <span>指名馬登録</span>
+      <span id="horse-form-arrow" style="font-size:0.85rem;transition:transform 0.2s;">▶</span>
+    </button>
+    <div id="horse-form-body" style="display:none;padding:0 16px 16px;">
+      <div id="h-alert"></div>
+      <div class="g2">
+        <div><label>馬名</label><input type="text" id="h-name" placeholder="例：ベレシート"></div>
+        <div><label>指名者</label><select id="h-owner"><option value="">-- 指名者を選択 --</option></select></div>
       </div>
-      <div><label>所属</label>
-        <select id="h-stable"><option value="栗東">栗東</option><option value="美浦">美浦</option></select>
+      <div class="g4" style="margin-top:8px;">
+        <div><label>毛色</label>
+          <select id="h-color">
+            <option>鹿毛</option><option>黒鹿毛</option><option>青鹿毛</option>
+            <option>栗毛</option><option>栃栗毛</option><option>青毛</option><option>芦毛</option><option>白毛</option>
+          </select>
+        </div>
+        <div><label>所属</label>
+          <select id="h-stable"><option value="栗東">栗東</option><option value="美浦">美浦</option></select>
+        </div>
+        <div><label>厩舎名</label><input type="text" id="h-trainer" placeholder="例：斉藤崇史"></div>
+        <div><div class="chk-row" style="margin-top:20px;"><input type="checkbox" id="h-chu"><label style="margin:0;font-size:13px;">抽せん馬</label></div></div>
       </div>
-      <div><label>厩舎名</label><input type="text" id="h-trainer" placeholder="例：斉藤崇史"></div>
-      <div><div class="chk-row" style="margin-top:20px;"><input type="checkbox" id="h-chu"><label style="margin:0;font-size:13px;">抽せん馬</label></div></div>
-    </div>
-    <div class="g3" style="margin-top:8px;">
-      <div><label>父名</label><input type="text" id="h-sire" placeholder="例：エピファネイア"></div>
-      <div><label>母名</label><input type="text" id="h-dam" placeholder="例：クロノジェネシス"></div>
-      <div><label>母の父名</label><input type="text" id="h-bms" placeholder="例：バゴ"></div>
-    </div>
-    <div class="g2" style="margin-top:8px;">
-      <div><label>馬主</label><input type="text" id="h-owner2" placeholder="例：サンデーレーシング"></div>
-      <div><label>生産者</label><input type="text" id="h-breeder" placeholder="例：ノーザンファーム"></div>
-    </div>
-    <div style="margin-top:12px;display:flex;gap:8px;">
-      <button class="btn btn-p" onclick="addHorse()">登録する</button>
-      <button class="btn" onclick="clearHorseForm()">クリア</button>
+      <div class="g3" style="margin-top:8px;">
+        <div><label>父名</label><input type="text" id="h-sire" placeholder="例：エピファネイア"></div>
+        <div><label>母名</label><input type="text" id="h-dam" placeholder="例：クロノジェネシス"></div>
+        <div><label>母の父名</label><input type="text" id="h-bms" placeholder="例：バゴ"></div>
+      </div>
+      <div class="g2" style="margin-top:8px;">
+        <div><label>馬主</label><input type="text" id="h-owner2" placeholder="例：サンデーレーシング"></div>
+        <div><label>生産者</label><input type="text" id="h-breeder" placeholder="例：ノーザンファーム"></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <button class="btn btn-p" onclick="addHorse()">登録する</button>
+        <button class="btn" onclick="clearHorseForm()">クリア</button>
+      </div>
     </div>
   </div>
   <div class="card"><div class="card-title">登録馬一覧</div><div id="horse-list"></div></div>
@@ -871,6 +876,14 @@ function addHorse(){
   saveData();
   clearHorseForm();
   renderHorseList();
+}
+
+function toggleHorseForm(){
+  const body=document.getElementById('horse-form-body');
+  const arrow=document.getElementById('horse-form-arrow');
+  const open=body.style.display==='none';
+  body.style.display=open?'block':'none';
+  arrow.style.transform=open?'rotate(90deg)':'';
 }
 
 function clearHorseForm(){
