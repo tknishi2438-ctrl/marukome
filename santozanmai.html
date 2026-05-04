@@ -1361,7 +1361,7 @@ function renderResultCard(result, container) {
     html += '</tbody></table>';
 
     // 各プレイヤー別内訳
-    html += '<hr class="divider"><p style="font-size:0.83rem;color:#87ceeb;margin-bottom:8px;">📋 プレイヤー別内訳</p>';
+    html += '<hr class="divider"><p style="font-size:0.83rem;color:#006633;font-weight:bold;margin-bottom:8px;">📋 プレイヤー別内訳</p>';
     ['A','B','C'].forEach(p => {
         const pl  = players[p];
         const isW = winners.includes(p);
@@ -1369,24 +1369,24 @@ function renderResultCard(result, container) {
         const horseSummary = pl.horses.map(h => {
             const ptStr = h.pt > 0 ? `<span class="pt-pos">+${h.pt}</span>`
                         : h.pt < 0 ? `<span class="pt-neg">${h.pt}</span>`
-                        : `<span style="color:#888;">0</span>`;
+                        : `<span style="color:#aaa;">0</span>`;
             return `${escH(h.name)}(${h.rank}着/${ptStr}pt)`;
         }).join('　');
 
         const vp  = victoryPts[p];
         const vtxt = vp > 0 ? `<span class="vpts-gain">+${vp}</span>`
                    : vp < 0 ? `<span class="vpts-loss">${vp}</span>`
-                   : '<span style="color:#888;">±0</span>';
+                   : '<span style="color:#aaa;">±0</span>';
 
         html += `
-            <div style="margin-bottom:8px;padding:10px;background:#0f3460;
-                        border-radius:6px;border-left:3px solid ${bc};">
-                <div style="font-weight:bold;font-size:0.9rem;margin-bottom:5px;">
+            <div style="margin-bottom:8px;padding:10px;background:#fff;
+                        border:1px solid #d4e8d4;border-radius:6px;border-left:4px solid ${bc};">
+                <div style="font-weight:bold;font-size:0.9rem;color:#222;margin-bottom:5px;">
                     ${escH(pl.name)}${isW ? '<span class="badge-winner">勝者</span>' : ''}
                 </div>
-                <div style="font-size:0.8rem;color:#ccc;line-height:1.8;">${horseSummary}</div>
-                <div style="margin-top:6px;font-size:0.88rem;">
-                    着順pt合計: <strong style="color:#ffd700;">${pl.total}pt</strong>
+                <div style="font-size:0.8rem;color:#555;line-height:1.8;">${horseSummary}</div>
+                <div style="margin-top:6px;font-size:0.88rem;color:#444;">
+                    着順pt合計: <strong class="pt-pos">${pl.total}pt</strong>
                     ／ 勝利pt: ${vtxt}pt
                 </div>
             </div>
