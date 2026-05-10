@@ -166,7 +166,9 @@ tr:last-child td{border-bottom:none;}
           <option value="1">1着</option><option value="2">2着</option><option value="3">3着</option>
           <option value="4">4着</option><option value="5">5着</option><option value="6">6着</option>
           <option value="7">7着</option><option value="8">8着</option><option value="9">9着以下</option>
-          <option value="last">最下位</option>
+          <option value="last">最下位（ドンジリ）</option>
+          <option value="scratch">競争除外（0pt）</option>
+          <option value="stopped">競争中止（−3pt）</option>
         </select>
       </div>
       <div><label>区分</label>
@@ -326,6 +328,8 @@ tr:last-child td{border-bottom:none;}
             <option value="4">4着</option><option value="5">5着</option><option value="6">6着</option>
             <option value="7">7着</option><option value="8">8着</option><option value="9">9着以下</option>
             <option value="last">最下位（ドンジリ）</option>
+            <option value="scratch">競争除外（0pt）</option>
+            <option value="stopped">競争中止（−3pt）</option>
           </select>
         </div>
         <div><label>開催区分</label>
@@ -628,7 +632,7 @@ function getPt(grade,place){
 
 function calcPts(r){
   const horse=S.horses.find(h=>h.id===r.horseId);
-  const isLast=r.place==='last';
+  const isLast=r.place==='last'||r.place==='stopped';
   const place=isLast?99:parseInt(r.place);
   let pt=getPt(r.grade,place);
   if(place===1){
@@ -647,7 +651,7 @@ function calcPts(r){
 
 function calcPtDetail(r){
   const horse=S.horses.find(function(h){return h.id===r.horseId;});
-  const isLast=r.place==='last';
+  const isLast=r.place==='last'||r.place==='stopped';
   const place=isLast?99:parseInt(r.place);
   const base=getPt(r.grade,place);
   const specials=[];
@@ -767,7 +771,7 @@ function renderRanking(){
           const d=calcPtDetail(r);
           const spHtml=d.specials.length?' <small style="color:#7c3aed;font-size:10px;">'+d.specials.join(' ')+'</small>':'';
           const ptHtml=d.total>0?'<b style="color:#16a34a;">+'+d.total+'</b>':d.total<0?'<b style="color:#dc2626;">'+d.total+'</b>':'<span style="color:#888;">0</span>';
-          const placeStr=r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着';
+          const placeStr=r.place==='last'?'最下位':r.place==='stopped'?'競争中止':r.place==='scratch'?'競争除外':r.place==='9'?'9着以下':r.place+'着';
           return '<tr style="background:'+(r.confirmed?'#f0fdf4':'#fff')+';">'
             +'<td style="padding:4px 8px;font-size:11px;color:#888;white-space:nowrap;">'+r.date+'</td>'
             +'<td style="padding:4px 8px;font-size:12px;white-space:nowrap;">'+r.name+'</td>'
@@ -1081,7 +1085,7 @@ function renderRaceHist(){
   const gl={G1:'G1',G2:'G2',G3:'G3',OP:'OP/Listed',flat:'平場',maiden:'未勝利',newface:'新馬'};
   const rl={JRA:'JRA',local:'地方',overseas:'海外'};
   const sorted=[...S.races].sort((a,b)=>b.date.localeCompare(a.date));
-  el.innerHTML=`<table class="horse-table" style="width:100%;"><thead><tr><th style="white-space:nowrap;">日付</th><th>レース名</th><th style="white-space:nowrap;">馬名</th><th style="white-space:nowrap;">着順</th><th style="white-space:nowrap;">pt</th><th></th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#f9fdf9':'#fff'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td>${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span> <span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${h?h.name:'不明'}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editRace(${r.id})">編集</button></td></tr>`;}).join('')}</tbody></table>`;
+  el.innerHTML=`<table class="horse-table" style="width:100%;"><thead><tr><th style="white-space:nowrap;">日付</th><th>レース名</th><th style="white-space:nowrap;">馬名</th><th style="white-space:nowrap;">着順</th><th style="white-space:nowrap;">pt</th><th></th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#f9fdf9':'#fff'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td>${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span> <span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${h?h.name:'不明'}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='stopped'?'競争中止':r.place==='scratch'?'競争除外':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td><td style="white-space:nowrap;"><button class="btn-edit" onclick="editRace(${r.id})">編集</button></td></tr>`;}).join('')}</tbody></table>`;
 }
 function delRace(id){
   S.races=S.races.filter(r=>r.id!==id);
@@ -1246,14 +1250,14 @@ function updateAutoSpIndicators(){
   const place=document.getElementById('r-place').value;
   const horseId=parseInt(document.getElementById('r-horse').value);
   const horse=S.horses.find(h=>h.id===horseId);
-  document.getElementById('sp-donziri').checked=(place==='last');
+  document.getElementById('sp-donziri').checked=(place==='last'||place==='stopped');
   document.getElementById('sp-chu').checked=(place==='1'&&!!(horse&&horse.chu));
 }
 function updateEditAutoSpIndicators(){
   const place=document.getElementById('edit-race-place').value;
   const horseId=parseInt(document.getElementById('edit-race-horse').value);
   const horse=S.horses.find(h=>h.id===horseId);
-  document.getElementById('edit-sp-donziri').checked=(place==='last');
+  document.getElementById('edit-sp-donziri').checked=(place==='last'||place==='stopped');
   document.getElementById('edit-sp-chu').checked=(place==='1'&&!!(horse&&horse.chu));
 }
 
@@ -1308,7 +1312,7 @@ function renderArchiveRaceHist(data){
   const rl={JRA:'JRA',local:'地方',overseas:'海外'};
   const saved=S; S=data;
   const sorted=[...data.races].sort((a,b)=>b.date.localeCompare(a.date));
-  el.innerHTML=`<table class="horse-table" style="width:100%;"><thead><tr><th style="white-space:nowrap;">日付</th><th>レース名</th><th style="white-space:nowrap;">馬名</th><th style="white-space:nowrap;">着順</th><th style="white-space:nowrap;">pt</th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#f9fdf9':'#fff'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td>${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span> <span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${h?h.name:'不明'}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td></tr>`;}).join('')}</tbody></table>`;
+  el.innerHTML=`<table class="horse-table" style="width:100%;"><thead><tr><th style="white-space:nowrap;">日付</th><th>レース名</th><th style="white-space:nowrap;">馬名</th><th style="white-space:nowrap;">着順</th><th style="white-space:nowrap;">pt</th></tr></thead><tbody>${sorted.map((r,i)=>{const h=S.horses.find(h=>h.id===r.horseId);const pt=calcPts(r);return`<tr style="background:${i%2===1?'#f9fdf9':'#fff'};"><td style="font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td>${r.name} <span class="badge b-info" style="font-size:10px;">${gl[r.grade]||r.grade}</span> <span class="badge ${r.region==='JRA'?'b-ok':r.region==='overseas'?'b-warn':'b-silver'}" style="font-size:10px;">${rl[r.region]||r.region}</span></td><td style="font-weight:500;white-space:nowrap;">${h?h.name:'不明'}</td><td style="white-space:nowrap;">${r.place==='last'?'最下位':r.place==='stopped'?'競争中止':r.place==='scratch'?'競争除外':r.place==='9'?'9着以下':r.place+'着'}</td><td style="font-weight:600;white-space:nowrap;${pt<0?'color:#dc2626':pt>0?'color:#16a34a':''}">${pt>=0?'+':''}${pt}pt</td></tr>`;}).join('')}</tbody></table>`;
   S=saved;
 }
 

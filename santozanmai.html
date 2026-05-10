@@ -1167,9 +1167,10 @@ function updateResultsInput() {
         return;
     }
 
+    const totalH = parseInt(document.getElementById('totalHorses').value) || 18;
     container.innerHTML = horses.map(h => {
         const sid = toSafeId(h);
-        const opts = Array.from({length: 20}, (_, k) =>
+        const opts = Array.from({length: totalH}, (_, k) =>
             `<option value="${k+1}">${k+1}着</option>`
         ).join('');
         return `
@@ -1178,6 +1179,8 @@ function updateResultsInput() {
                 <select id="res_${sid}">
                     <option value="">着順を選択</option>
                     ${opts}
+                    <option value="98">競争除外（0pt）</option>
+                    <option value="99">競争中止（−3pt）</option>
                 </select>
             </div>
         `;
@@ -1191,6 +1194,8 @@ function updateResultsInput() {
 // ============================================================
 
 function placementPt(rank, totalHorses) {
+    if (rank === 98) return  0;  // 競争除外
+    if (rank === 99) return -3;  // 競争中止
     if (rank === 1) return  5;
     if (rank === 2) return  4;
     if (rank === 3) return  3;
@@ -1198,6 +1203,12 @@ function placementPt(rank, totalHorses) {
     if (rank === 5) return  1;
     if (rank === totalHorses) return -3;
     return 0;
+}
+
+function rankLabel(rank, totalHorses) {
+    if (rank === 98) return '除外';
+    if (rank === 99) return '競争中止';
+    return rank + '着';
 }
 
 // ============================================================
@@ -1236,7 +1247,7 @@ function calculateResults() {
                 alert(`「${name}」の着順が入力されていません`);
                 return;
             }
-            if (rank > totalHorses) {
+            if (rank !== 98 && rank !== 99 && rank > totalHorses) {
                 alert(`「${name}」の着順(${rank}着)が出走頭数(${totalHorses}頭)を超えています`);
                 return;
             }
@@ -1346,7 +1357,7 @@ function renderResultCard(result, container) {
         html += `
             <tr>
                 <td style="text-align:left;">${escH(h.name)}</td>
-                <td>${h.rank}着${h.rank === totalHorses ? '🔻' : ''}</td>
+                <td>${rankLabel(h.rank, totalHorses)}${h.rank === totalHorses || h.rank === 99 ? '🔻' : ''}</td>
                 <td class="${ptCls}">${ptTxt}</td>
                 <td>
                     <span class="player-inline-badge"
@@ -1375,7 +1386,7 @@ function renderResultCard(result, container) {
             const ptStr = h.pt > 0 ? `<span class="pt-pos">+${h.pt}</span>`
                         : h.pt < 0 ? `<span class="pt-neg">${h.pt}</span>`
                         : `<span style="color:#aaa;">0</span>`;
-            return `<span>${escH(h.name)}</span><span>（${h.rank}着／${ptStr}pt）</span>`;
+            return `<span>${escH(h.name)}</span><span>（${rankLabel(h.rank, totalHorses)}／${ptStr}pt）</span>`;
         }).join('');
         const ptRows = `
             <span style="border-top:1px solid #e8f5ee;padding-top:4px;color:#444;">着順pt合計:</span>
@@ -1533,14 +1544,19 @@ function enterEditMode() {
                 </div>
         `;
         pl.horses.forEach((h, i) => {
+            const editOpts = Array.from({length: race.totalHorses}, (_, k) =>
+                `<option value="${k+1}"${h.rank===k+1?' selected':''}>${k+1}着</option>`
+            ).join('') +
+            `<option value="98"${h.rank===98?' selected':''}>競争除外（0pt）</option>` +
+            `<option value="99"${h.rank===99?' selected':''}>競争中止（−3pt）</option>`;
             formHtml += `
                 <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
                     <span style="font-size:0.75rem; color:#aac; min-width:32px;">第${i+1}頭</span>
                     <input type="text" id="edit_name_${p}_${i}" value="${escH(h.name)}"
                            style="flex:1; font-size:0.82rem;" placeholder="馬名">
-                    <input type="number" id="edit_rank_${p}_${i}" value="${h.rank}"
-                           min="1" max="28" style="width:52px; font-size:0.82rem;" placeholder="着順">
-                    <span style="font-size:0.75rem; color:#aac;">着</span>
+                    <select id="edit_rank_${p}_${i}" style="width:120px; font-size:0.82rem;">
+                        ${editOpts}
+                    </select>
                 </div>
             `;
         });
@@ -1581,7 +1597,7 @@ function saveRaceEdit() {
             const rank = parseInt(document.getElementById(`edit_rank_${p}_${i}`).value, 10);
             if (!name) { alert(`${race.players[p].name}の第${i+1}頭目の馬名を入力してください`); return; }
             if (isNaN(rank) || rank < 1) { alert(`${name}の着順を入力してください`); return; }
-            if (rank > newTotal) { alert(`「${name}」の着順(${rank}着)が出走頭数(${newTotal}頭)を超えています`); return; }
+            if (rank !== 98 && rank !== 99 && rank > newTotal) { alert(`「${name}」の着順(${rank}着)が出走頭数(${newTotal}頭)を超えています`); return; }
         }
     }
 
