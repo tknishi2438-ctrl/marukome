@@ -611,19 +611,25 @@ function sw(tab,el){
 }
 function loadSettingsUI(){
   const sp=getSpPts();
+  const pt=getPtTable();
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
-  set('sp-pt-record',sp.record);
-  set('sp-pt-tansho',sp.tansho);
-  set('sp-pt-umaren',sp.umaren);
-  set('sp-pt-umatan',sp.umatan);
-  set('sp-pt-derby', sp.derby);
-  set('sp-pt-g1x2',  sp.g1x2);
-  set('sp-pt-chu',   sp.chu);
+  set('sp-pt-record',sp.record); set('sp-pt-tansho',sp.tansho); set('sp-pt-umaren',sp.umaren);
+  set('sp-pt-umatan',sp.umatan); set('sp-pt-derby',sp.derby); set('sp-pt-g1x2',sp.g1x2); set('sp-pt-chu',sp.chu);
+  set('pt-newface-1',pt.newface[0]);
+  set('pt-maiden-1',pt.maiden[0]);
+  set('pt-flat-1',pt.flat[0]);
+  set('pt-OP-1',pt.OP[0]); set('pt-OP-2',pt.OP[1]);
+  set('pt-G3-1',pt.G3[0]); set('pt-G3-2',pt.G3[1]); set('pt-G3-3',pt.G3[2]);
+  set('pt-G2-1',pt.G2[0]); set('pt-G2-2',pt.G2[1]); set('pt-G2-3',pt.G2[2]);
+  set('pt-G1-1',pt.G1[0]); set('pt-G1-2',pt.G1[1]); set('pt-G1-3',pt.G1[2]);
+  set('pt-G1-4',pt.G1[3]); set('pt-G1-5',pt.G1[4]); set('pt-G1-6',pt.G1[5]);
 }
 
+const DEFAULT_PT_TABLE={newface:[8,0,0,0,0,0],maiden:[5,0,0,0,0,0],flat:[10,0,0,0,0,0],OP:[15,8,0,0,0,0],G3:[20,15,10,0,0,0],G2:[30,20,15,0,0,0],G1:[50,30,20,15,10,5]};
+function getPtTable(){return S.ptTable||DEFAULT_PT_TABLE;}
 function getPt(grade,place){
   const p=parseInt(place);
-  const tbl={newface:[8,0,0,0,0,0],maiden:[5,0,0,0,0,0],flat:[10,0,0,0,0,0],OP:[15,8,0,0,0,0],G3:[20,15,10,0,0,0],G2:[30,20,15,0,0,0],G1:[50,30,20,15,10,5]};
+  const tbl=getPtTable();
   const g=tbl[grade]||[0,0,0,0,0,0];
   if(p>=1&&p<=5) return g[p-1]||0;
   if(p>=6&&p<=8) return grade==='G1'?g[5]:0;
@@ -1162,6 +1168,15 @@ function toggleConfirmed(id, cb){
 function saveSettings(){
   S.name=gv('s-name')||'マルコメ杯POG'; S.round=gn('s-round')||31;
   S.start=gv('s-start'); S.end=gv('s-end');
+  S.ptTable={
+    newface:[gn('pt-newface-1')??8,0,0,0,0,0],
+    maiden: [gn('pt-maiden-1')??5,0,0,0,0,0],
+    flat:   [gn('pt-flat-1')??10,0,0,0,0,0],
+    OP:     [gn('pt-OP-1')??15,gn('pt-OP-2')??8,0,0,0,0],
+    G3:     [gn('pt-G3-1')??20,gn('pt-G3-2')??15,gn('pt-G3-3')??10,0,0,0],
+    G2:     [gn('pt-G2-1')??30,gn('pt-G2-2')??20,gn('pt-G2-3')??15,0,0,0],
+    G1:     [gn('pt-G1-1')??50,gn('pt-G1-2')??30,gn('pt-G1-3')??20,gn('pt-G1-4')??15,gn('pt-G1-5')??10,gn('pt-G1-6')??5],
+  };
   S.spPts={
     record: gn('sp-pt-record')??5,
     tansho: gn('sp-pt-tansho')??10,
@@ -1322,6 +1337,7 @@ function startNewSeason(){
   const archiveTitle=`第${currentRound}回 ${S.name||'マルコメ杯POG'}`;
   if(!confirm(`${archiveTitle}のデータをアーカイブして、第${newRound}回を開始しますか？\n\n✅ 引き継ぐもの：参加者\n🗑 リセットするもの：指名馬・レース結果\n\nこの操作は元に戻せません。`)) return;
 
+  if(!S.ptTable) S.ptTable=getPtTable();
   const archiveData=JSON.parse(JSON.stringify(S));
   const archiveRef=db.collection('g1app').doc('pog_s'+currentRound);
 
