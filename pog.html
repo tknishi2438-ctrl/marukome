@@ -744,7 +744,7 @@ function renderRanking(){
         const winPt=bonusWin.has(o.id)?'<span style="color:#854d0e;font-weight:600;">+50</span>':'<span style="color:#9ca3af;">0</span>';
         return`<tr style="background:${rowBg};${leftBorder}">`
           +`<td style="text-align:center;padding:10px 8px;">${badge}</td>`
-          +`<td style="font-weight:600;font-size:${rn<=3?'15px':'13px'};white-space:nowrap;">${o.name}</td>`
+          +`<td style="font-weight:600;font-size:${rn<=3?'15px':'13px'};white-space:nowrap;">${S.winnerId&&o.id===S.winnerId?'🏆 ':''}${o.name}</td>`
           +`<td style="text-align:right;color:${ptColor};font-size:${ptSize};font-weight:700;white-space:nowrap;">${o.pts}pt</td>`
           +`<td style="text-align:left;font-size:12px;color:#6b7280;line-height:1.8;white-space:nowrap;">全出走 ${runPt}pt<br>全勝利 ${winPt}pt</td>`
           +'</tr>';
