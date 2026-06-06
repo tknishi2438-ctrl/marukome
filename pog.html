@@ -135,6 +135,7 @@ tr:last-child td{border-bottom:none;}
 .modal-footer{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
 .btn-edit{padding:4px 10px;border-radius:4px;border:1px solid #ccc;font-size:12px;cursor:pointer;background:#fff;color:#333;}
 .btn-edit:hover{background:#f5f5f5;}
+@keyframes trophy-fade{0%,100%{opacity:1}50%{opacity:0.1}}.trophy-blink{animation:trophy-fade 2s ease-in-out infinite;}
 </style>
 
 <!-- レース結果編集モーダル -->
@@ -742,8 +743,9 @@ function renderRanking(){
         const ptSize=rn===1?'18px':rn<=3?'15px':'13px';
         const runPt=bonusRun.has(o.id)?'<span style="color:#166534;font-weight:600;">+30</span>':'<span style="color:#9ca3af;">0</span>';
         const winPt=bonusWin.has(o.id)?'<span style="color:#854d0e;font-weight:600;">+50</span>':'<span style="color:#9ca3af;">0</span>';
+        const trophyHtml=S.winnerId&&rn===1?'<span class="trophy-blink" style="font-size:14px;display:block;">🏆</span>':'';
         return`<tr style="background:${rowBg};${leftBorder}">`
-          +`<td style="text-align:center;padding:10px 8px;">${badge}</td>`
+          +`<td style="text-align:center;padding:10px 8px;">${trophyHtml}${badge}</td>`
           +`<td style="font-weight:600;font-size:${rn<=3?'15px':'13px'};white-space:nowrap;">${o.name}</td>`
           +`<td style="text-align:right;color:${ptColor};font-size:${ptSize};font-weight:700;white-space:nowrap;">${o.pts}pt</td>`
           +`<td style="text-align:left;font-size:12px;color:#6b7280;line-height:1.8;white-space:nowrap;">全出走 ${runPt}pt<br>全勝利 ${winPt}pt</td>`
