@@ -1409,23 +1409,6 @@ Promise.all([POG_REF.get(), POG_META_REF.get()]).then(([docSnap, metaSnap]) => {
     pogMeta = metaSnap.data();
     if (!pogMeta.archives) pogMeta.archives = [];
   }
-  // 未登録レースの一括追加（2026-04-22）
-  (function addMissingRaces(){
-    const sp0 = {sp_record:false,sp_tansho:false,sp_umaren:false,sp_umatan:false,sp_derby:false,sp_g1x2:false,confirmed:false};
-    const missing = [
-      {horseId:25, name:'3歳未勝利',    grade:'maiden', date:'2026-04-18', place:'6', region:'JRA'},
-      {horseId:33, name:'3歳1勝クラス', grade:'flat',   date:'2026-04-19', place:'2', region:'JRA'},
-      {horseId:38, name:'3歳未勝利',    grade:'maiden', date:'2026-04-19', place:'7', region:'JRA'},
-      {horseId:44, name:'3歳未勝利',    grade:'maiden', date:'2026-04-18', place:'9', region:'JRA'},
-    ];
-    let added = 0;
-    missing.forEach(r => {
-      if (S.races.some(x => x.horseId === r.horseId && x.date === r.date && x.name === r.name)) return;
-      S.races.push({id: S.nRId++, ...r, ...sp0});
-      added++;
-    });
-    if (added > 0) saveData();
-  })();
   initApp();
 }).catch(e => {
   console.error('Firestore load error:', e);
