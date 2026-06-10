@@ -190,7 +190,6 @@ tr:last-child td{border-bottom:none;}
         <div class="chk-row"><input type="checkbox" id="edit-sp-derby" onchange="document.getElementById('edit-sp-g1x2').disabled=this.checked;if(this.checked)document.getElementById('edit-sp-g1x2').checked=false;"><label style="margin:0;">ダービー勝ち　+50pt</label></div>
         <div class="chk-row"><input type="checkbox" id="edit-sp-g1x2"><label style="margin:0;">同一馬G1・2勝目以降（ダービー除く）　+50pt</label></div>
         <div class="chk-row"><input type="checkbox" id="edit-sp-donziri" disabled><label style="margin:0;color:#9ca3af;">最下位（ドンジリ）　−3pt　<small>自動</small></label></div>
-        <div class="chk-row"><input type="checkbox" id="edit-sp-chu" disabled><label style="margin:0;color:#9ca3af;">抽せん馬勝利　+5pt　<small>自動</small></label></div>
       </div>
     </div>
     <div class="modal-footer" style="justify-content:space-between;">
@@ -240,7 +239,6 @@ tr:last-child td{border-bottom:none;}
         <select id="edit-stable"><option value="栗東">栗東</option><option value="美浦">美浦</option></select>
       </div>
       <div><label>厩舎名</label><input type="text" id="edit-trainer"></div>
-      <div><div class="chk-row" style="margin-top:20px;"><input type="checkbox" id="edit-chu"><label style="margin:0;font-size:13px;">抽せん馬</label></div></div>
     </div>
     <div class="g3" style="margin-top:8px;">
       <div><label>父名</label><input type="text" id="edit-sire"></div>
@@ -351,7 +349,6 @@ tr:last-child td{border-bottom:none;}
           <div class="chk-row"><input type="checkbox" id="sp-derby" onchange="document.getElementById('sp-g1x2').disabled=this.checked;if(this.checked)document.getElementById('sp-g1x2').checked=false;"><label style="margin:0;">ダービー勝ち　+50pt</label></div>
           <div class="chk-row"><input type="checkbox" id="sp-g1x2"><label style="margin:0;">同一馬G1・2勝目以降（ダービー除く）　+50pt</label></div>
           <div class="chk-row"><input type="checkbox" id="sp-donziri" disabled><label style="margin:0;color:#9ca3af;">最下位（ドンジリ）　−3pt　<small>自動</small></label></div>
-          <div class="chk-row"><input type="checkbox" id="sp-chu" disabled><label style="margin:0;color:#9ca3af;">抽せん馬勝利　+5pt　<small>自動</small></label></div>
         </div>
       </div>
       <div style="margin-top:12px;"><button class="btn btn-p" onclick="addRace()">登録する</button></div>
@@ -383,7 +380,6 @@ tr:last-child td{border-bottom:none;}
           <select id="h-stable"><option value="栗東">栗東</option><option value="美浦">美浦</option></select>
         </div>
         <div><label>厩舎名</label><input type="text" id="h-trainer" placeholder="例：斉藤崇史"></div>
-        <div><div class="chk-row" style="margin-top:20px;"><input type="checkbox" id="h-chu"><label style="margin:0;font-size:13px;">抽せん馬</label></div></div>
       </div>
       <div class="g3" style="margin-top:8px;">
         <div><label>父名</label><input type="text" id="h-sire" placeholder="例：エピファネイア"></div>
@@ -452,7 +448,6 @@ tr:last-child td{border-bottom:none;}
       <tr><td>馬単万馬券</td><td><input class="pt-inp" type="number" id="sp-pt-umatan" value="5" min="0"></td></tr>
       <tr><td>日本ダービー制覇</td><td><input class="pt-inp" type="number" id="sp-pt-derby" value="50" min="0"></td></tr>
       <tr><td>同一馬のG1・2勝目以降（ダービー除く）</td><td><input class="pt-inp" type="number" id="sp-pt-g1x2" value="50" min="0"></td></tr>
-      <tr><td>抽せん馬ボーナス</td><td><input class="pt-inp" type="number" id="sp-pt-chu" value="5" min="0"></td></tr>
     </table>
     <div style="margin-top:12px;"><button class="btn btn-p" onclick="saveSettings()">保存する</button></div>
   </div>
@@ -615,7 +610,7 @@ function loadSettingsUI(){
   const pt=getPtTable();
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
   set('sp-pt-record',sp.record); set('sp-pt-tansho',sp.tansho); set('sp-pt-umaren',sp.umaren);
-  set('sp-pt-umatan',sp.umatan); set('sp-pt-derby',sp.derby); set('sp-pt-g1x2',sp.g1x2); set('sp-pt-chu',sp.chu);
+  set('sp-pt-umatan',sp.umatan); set('sp-pt-derby',sp.derby); set('sp-pt-g1x2',sp.g1x2);
   set('pt-newface-1',pt.newface[0]);
   set('pt-maiden-1',pt.maiden[0]);
   set('pt-flat-1',pt.flat[0]);
@@ -650,7 +645,7 @@ function calcPts(r){
     if(r.sp_umatan) pt+=sp.umatan;
     if(r.sp_derby)             pt+=sp.derby;
     if(r.sp_g1x2&&!r.sp_derby) pt+=sp.g1x2;
-    if(horse&&horse.chu) pt+=sp.chu;
+    if(horse&&horse.chu&&sp.chu) pt+=sp.chu; // 抽せん馬ボーナス（第31回まで・設定が残るシーズンのみ）
   }
   if(isLast) pt-=3;
   return pt;
@@ -670,7 +665,7 @@ function calcPtDetail(r){
     if(r.sp_umatan) specials.push(`馬単万券+${sp.umatan}`);
     if(r.sp_derby)             specials.push(`ダービー+${sp.derby}`);
     if(r.sp_g1x2&&!r.sp_derby) specials.push(`G1複数+${sp.g1x2}`);
-    if(horse&&horse.chu) specials.push(`抽せん馬+${sp.chu}`);
+    if(horse&&horse.chu&&sp.chu) specials.push(`抽せん馬+${sp.chu}`);
   }
   if(isLast) specials.push('最下位−3');
   return {base:base, specials:specials, total:calcPts(r)};
@@ -886,7 +881,7 @@ function saveEditOwner(){
 function addHorse(){
   const name=gv('h-name').trim(); const ownerId=parseInt(gv('h-owner'));
   if(!name||!ownerId){alert('馬名と指名者を選択してください');return;}
-  S.horses.push({id:S.nHId++,name,ownerId,color:gv('h-color'),stable:gv('h-stable'),trainer:gv('h-trainer').trim(),sire:gv('h-sire').trim(),dam:gv('h-dam').trim(),bms:gv('h-bms').trim(),owner2:gv('h-owner2').trim(),breeder:gv('h-breeder').trim(),chu:gc('h-chu')});
+  S.horses.push({id:S.nHId++,name,ownerId,color:gv('h-color'),stable:gv('h-stable'),trainer:gv('h-trainer').trim(),sire:gv('h-sire').trim(),dam:gv('h-dam').trim(),bms:gv('h-bms').trim(),owner2:gv('h-owner2').trim(),breeder:gv('h-breeder').trim(),chu:false});
   const al=document.getElementById('h-alert');
   al.innerHTML=`<div class="alert-ok">${name}を登録しました</div>`;
   setTimeout(()=>al.innerHTML='',3000);
@@ -913,7 +908,6 @@ function toggleHorseForm(){
 
 function clearHorseForm(){
   ['h-name','h-trainer','h-sire','h-dam','h-bms','h-owner2','h-breeder'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('h-chu').checked=false;
 }
 
 window.fillHorseFromJRA=function(data){
@@ -966,10 +960,10 @@ function renderHorseList(){
           const placeStr=r.place==='last'?'最下位':r.place==='9'?'9着以下':`${r.place}着`;
           return `<tr style="background:${r.confirmed?'#f0fdf4':'#fff'};"><td style="padding:4px 8px;font-size:11px;color:#888;white-space:nowrap;">${r.date}</td><td style="padding:4px 8px;font-size:12px;white-space:nowrap;">${r.name}</td><td style="padding:4px 8px;font-size:11px;color:#888;white-space:nowrap;">${gradeLabels[r.grade]||r.grade}</td><td style="padding:4px 8px;font-size:12px;text-align:center;white-space:nowrap;">${placeStr}</td><td style="padding:4px 8px;font-size:12px;text-align:right;white-space:nowrap;">${ptHtml}${spHtml}</td><td style="padding:4px 8px;text-align:center;white-space:nowrap;"><input type="checkbox" ${r.confirmed?'checked':''} onclick="event.stopPropagation();toggleConfirmed(${r.id},this)" title="確認済み" style="cursor:pointer;width:auto;accent-color:#16a34a;"></td><td style="padding:4px 8px;text-align:center;white-space:nowrap;"><button onclick="event.stopPropagation();editRace(${r.id})" style="font-size:10px;padding:2px 8px;border:1px solid #d4e8d4;background:#f0f8f4;cursor:pointer;color:#006633;border-radius:3px;">編集</button></td></tr>`;
         }).join('');
-        seisekiHtml=`<tr id="hl-hd-${h.id}" style="display:none;"><td colspan="4" style="padding:0;border-bottom:1px solid #d4e8d4;"><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f0f8f4;"><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:left;border-bottom:1px solid #d4e8d4;">日付</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:left;border-bottom:1px solid #d4e8d4;">レース</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:left;border-bottom:1px solid #d4e8d4;">区分</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:center;border-bottom:1px solid #d4e8d4;">着順</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:right;border-bottom:1px solid #d4e8d4;">pt</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:center;border-bottom:1px solid #d4e8d4;width:36px;">確認</th><th style="border-bottom:1px solid #d4e8d4;width:46px;"></th></tr></thead><tbody>${detailRows}</tbody></table></td></tr>`;
+        seisekiHtml=`<tr id="hl-hd-${h.id}" style="display:none;"><td colspan="3" style="padding:0;border-bottom:1px solid #d4e8d4;"><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f0f8f4;"><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:left;border-bottom:1px solid #d4e8d4;">日付</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:left;border-bottom:1px solid #d4e8d4;">レース</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:left;border-bottom:1px solid #d4e8d4;">区分</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:center;border-bottom:1px solid #d4e8d4;">着順</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:right;border-bottom:1px solid #d4e8d4;">pt</th><th style="padding:5px 8px;font-size:11px;font-weight:600;color:#006633;text-align:center;border-bottom:1px solid #d4e8d4;width:36px;">確認</th><th style="border-bottom:1px solid #d4e8d4;width:46px;"></th></tr></thead><tbody>${detailRows}</tbody></table></td></tr>`;
       }
 
-      const infoHtml=`<tr id="hl-id-${h.id}" style="display:none;"><td colspan="4" style="padding:8px 12px;background:#f8fffe;border-bottom:1px solid #d4e8d4;font-size:12px;color:#444;line-height:1.9;">
+      const infoHtml=`<tr id="hl-id-${h.id}" style="display:none;"><td colspan="3" style="padding:8px 12px;background:#f8fffe;border-bottom:1px solid #d4e8d4;font-size:12px;color:#444;line-height:1.9;">
         <span style="display:inline-block;margin-right:16px;"><b style="color:#006633;">所属</b> ${h.stable||'−'}　${h.trainer||'−'}</span>
         <span style="display:inline-block;margin-right:16px;"><b style="color:#006633;">父</b> ${h.sire||'−'}</span>
         <span style="display:inline-block;margin-right:16px;"><b style="color:#006633;">母</b> ${h.dam||'−'}</span>
@@ -979,15 +973,14 @@ function renderHorseList(){
       </td></tr>`;
 
       return `<tr style="${rowStyle}">
-        <td style="text-align:center;font-size:13px;font-weight:700;color:${h.chu?'#1d4ed8':'#ccc'};">${h.chu?'抽':'−'}</td>
         <td style="font-weight:600;font-size:13px;color:#222;white-space:nowrap;">${h.name}</td>
         <td style="text-align:right;${ptColor};white-space:nowrap;">${ptStr}pt</td>
         <td style="white-space:nowrap;padding-right:8px;">
           <button onclick="event.stopPropagation();toggleActionBtns('hl-act-row-${h.id}','hl-tog-${h.id}','${h.id}')" id="hl-tog-${h.id}" style="font-size:11px;padding:2px 7px;border:1px solid #d4e8d4;border-radius:4px;background:#f0f8f4;color:#006633;cursor:pointer;">▶</button>
         </td>
-      </tr><tr id="hl-act-row-${h.id}" style="display:none;"><td colspan="4" style="padding:6px 10px;background:#f8fffe;border-bottom:1px solid #e8f5ee;">${actionBtns}<button class="btn-edit" onclick="event.stopPropagation();editHorse(${h.id})">編集</button></td></tr>${seisekiHtml}${infoHtml}`;
+      </tr><tr id="hl-act-row-${h.id}" style="display:none;"><td colspan="3" style="padding:6px 10px;background:#f8fffe;border-bottom:1px solid #e8f5ee;">${actionBtns}<button class="btn-edit" onclick="event.stopPropagation();editHorse(${h.id})">編集</button></td></tr>${seisekiHtml}${infoHtml}`;
     }).join('');
-    return `<div style="margin-bottom:28px;"><div style="font-weight:700;font-size:15px;padding:6px 2px;border-bottom:2px solid #d4e8d4;margin-bottom:10px;color:#006633;">${o.name}（${hs.length}頭）</div><table class="horse-table"><thead><tr><th style="text-align:center;width:36px;">抽</th><th>馬名</th><th style="width:70px;text-align:right;">獲得pt</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    return `<div style="margin-bottom:28px;"><div style="font-weight:700;font-size:15px;padding:6px 2px;border-bottom:2px solid #d4e8d4;margin-bottom:10px;color:#006633;">${o.name}（${hs.length}頭）</div><table class="horse-table"><thead><tr><th>馬名</th><th style="width:70px;text-align:right;">獲得pt</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }).join('');
 }
 function toggleActionBtns(rowId, btnId, hid){
@@ -1044,7 +1037,6 @@ function editHorse(id){
   document.getElementById('edit-bms').value=h.bms||'';
   document.getElementById('edit-owner2').value=h.owner2||'';
   document.getElementById('edit-breeder').value=h.breeder||'';
-  document.getElementById('edit-chu').checked=!!h.chu;
   const sel=document.getElementById('edit-owner');
   sel.innerHTML=S.owners.map(o=>`<option value="${o.id}"${o.id===h.ownerId?' selected':''}>${o.name}</option>`).join('');
   document.getElementById('edit-modal').classList.add('open');
@@ -1066,7 +1058,6 @@ function saveEditHorse(){
   h.bms=document.getElementById('edit-bms').value.trim();
   h.owner2=document.getElementById('edit-owner2').value.trim();
   h.breeder=document.getElementById('edit-breeder').value.trim();
-  h.chu=document.getElementById('edit-chu').checked;
   saveData();
   closeEditModal();
   renderHorseList();
@@ -1186,7 +1177,6 @@ function saveSettings(){
     umatan: gn('sp-pt-umatan')??5,
     derby:  gn('sp-pt-derby')??50,
     g1x2:   gn('sp-pt-g1x2')??50,
-    chu:    gn('sp-pt-chu')??5,
   };
   document.getElementById('pog-title').textContent=`第${S.round}回 ${S.name}`;
   const p=S.start&&S.end?`集計期間：${S.start} 〜 ${S.end}`:S.start?`集計開始：${S.start}`:'集計期間：未設定';
@@ -1196,7 +1186,7 @@ function saveSettings(){
   alert('設定を保存しました');
 }
 function getSpPts(){
-  return S.spPts||{record:5,tansho:10,umaren:5,umatan:5,derby:50,g1x2:50,chu:5};
+  return S.spPts||{record:5,tansho:10,umaren:5,umatan:5,derby:50,g1x2:50};
 }
 
 // データ管理機能
@@ -1268,14 +1258,12 @@ function updateAutoSpIndicators(){
   const horseId=parseInt(document.getElementById('r-horse').value);
   const horse=S.horses.find(h=>h.id===horseId);
   document.getElementById('sp-donziri').checked=(place==='last'||place==='stopped');
-  document.getElementById('sp-chu').checked=(place==='1'&&!!(horse&&horse.chu));
 }
 function updateEditAutoSpIndicators(){
   const place=document.getElementById('edit-race-place').value;
   const horseId=parseInt(document.getElementById('edit-race-horse').value);
   const horse=S.horses.find(h=>h.id===horseId);
   document.getElementById('edit-sp-donziri').checked=(place==='last'||place==='stopped');
-  document.getElementById('edit-sp-chu').checked=(place==='1'&&!!(horse&&horse.chu));
 }
 
 // ===== シーズン管理 =====
