@@ -560,21 +560,6 @@ const DEFAULT_DATA = {
 // Firestore からデータを読み込む（初期値はDEFAULT_DATA）
 let S = JSON.parse(JSON.stringify(DEFAULT_DATA));
 
-// DEFAULT_DATA から血統情報（sire/dam/bms）を補完する（既存データへの自動マイグレーション）
-DEFAULT_DATA.horses.forEach(def => {
-  const h = S.horses.find(h => h.id === def.id);
-  if (h) {
-    if (!h.sire    && def.sire)    h.sire    = def.sire;
-    if (!h.dam     && def.dam)     h.dam     = def.dam;
-    if (!h.bms     && def.bms)     h.bms     = def.bms;
-    if (!h.color   && def.color)   h.color   = def.color;
-    if (!h.owner2  && def.owner2)  h.owner2  = def.owner2;
-    if (!h.breeder && def.breeder) h.breeder = def.breeder;
-    if (!h.jraUrl  && def.jraUrl)  h.jraUrl  = def.jraUrl;
-  }
-});
-
-
 let pogMeta = { archives: [] };
 let viewingArchive = null;
 
@@ -1219,19 +1204,6 @@ function importJSON(){
     if(!data.owners||!data.horses||!data.races){alert('無効なデータ形式です');return;}
     if(!confirm('現在のデータを上書きしてインポートしますか？')) return;
     S=data;
-    // DEFAULT_DATA から不足フィールドを補完（jraUrl・血統情報など）
-    DEFAULT_DATA.horses.forEach(def => {
-      const h = S.horses.find(h => h.id === def.id);
-      if (h) {
-        if (!h.sire    && def.sire)    h.sire    = def.sire;
-        if (!h.dam     && def.dam)     h.dam     = def.dam;
-        if (!h.bms     && def.bms)     h.bms     = def.bms;
-        if (!h.color   && def.color)   h.color   = def.color;
-        if (!h.owner2  && def.owner2)  h.owner2  = def.owner2;
-        if (!h.breeder && def.breeder) h.breeder = def.breeder;
-        if (!h.jraUrl  && def.jraUrl)  h.jraUrl  = def.jraUrl;
-      }
-    });
     saveData();
     const al=document.getElementById('import-alert');
     al.innerHTML='<div class="alert-ok">✓ データをインポートしました</div>';
@@ -1379,19 +1351,6 @@ function initApp(){
 Promise.all([POG_REF.get(), POG_META_REF.get()]).then(([docSnap, metaSnap]) => {
   if (docSnap.exists) {
     S = docSnap.data();
-    // DEFAULT_DATAから血統情報を補完
-    DEFAULT_DATA.horses.forEach(def => {
-      const h = S.horses ? S.horses.find(h => h.id === def.id) : null;
-      if (h) {
-        if (!h.sire    && def.sire)    h.sire    = def.sire;
-        if (!h.dam     && def.dam)     h.dam     = def.dam;
-        if (!h.bms     && def.bms)     h.bms     = def.bms;
-        if (!h.color   && def.color)   h.color   = def.color;
-        if (!h.owner2  && def.owner2)  h.owner2  = def.owner2;
-        if (!h.breeder && def.breeder) h.breeder = def.breeder;
-        if (!h.jraUrl  && def.jraUrl)  h.jraUrl  = def.jraUrl;
-      }
-    });
   }
   if (metaSnap.exists) {
     pogMeta = metaSnap.data();
