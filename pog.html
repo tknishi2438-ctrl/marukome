@@ -957,15 +957,20 @@ function renderHorseList(){
         <span style="display:inline-block;"><b style="color:#006633;">生産者</b> ${h.breeder||'−'}</span>
       </td></tr>`;
 
+      const hasWin=hRaces.some(r=>r.place==='1');
+      const runMark=hasRaces?' <span title="出走済み" style="display:inline-block;font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:4px;padding:1px 5px;font-weight:600;vertical-align:middle;">出</span>':'';
+      const winMark=hasWin?' <span title="勝利済み" style="display:inline-block;font-size:10px;background:#fef3c7;color:#b45309;border-radius:4px;padding:1px 5px;font-weight:600;vertical-align:middle;">勝</span>':'';
       return `<tr style="${rowStyle}">
-        <td style="font-weight:600;font-size:13px;color:#222;white-space:nowrap;">${h.name}</td>
+        <td style="font-weight:600;font-size:13px;color:#222;white-space:nowrap;">${h.name}${runMark}${winMark}</td>
         <td style="text-align:right;${ptColor};white-space:nowrap;">${ptStr}pt</td>
         <td style="white-space:nowrap;padding-right:8px;">
           <button onclick="event.stopPropagation();toggleActionBtns('hl-act-row-${h.id}','hl-tog-${h.id}','${h.id}')" id="hl-tog-${h.id}" style="font-size:11px;padding:2px 7px;border:1px solid #d4e8d4;border-radius:4px;background:#f0f8f4;color:#006633;cursor:pointer;">▶</button>
         </td>
       </tr><tr id="hl-act-row-${h.id}" style="display:none;"><td colspan="3" style="padding:6px 10px;background:#f8fffe;border-bottom:1px solid #e8f5ee;">${actionBtns}<button class="btn-edit" onclick="event.stopPropagation();editHorse(${h.id})">編集</button></td></tr>${seisekiHtml}${infoHtml}`;
     }).join('');
-    return `<div style="margin-bottom:28px;"><div style="font-weight:700;font-size:15px;padding:6px 2px;border-bottom:2px solid #d4e8d4;margin-bottom:10px;color:#006633;">${o.name}（${hs.length}頭）</div><table class="horse-table"><thead><tr><th>馬名</th><th style="width:70px;text-align:right;">獲得pt</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    const runCount=hs.filter(h=>S.races.some(r=>r.horseId===h.id&&inPeriod(r.date))).length;
+    const winCount=hs.filter(h=>S.races.some(r=>r.horseId===h.id&&inPeriod(r.date)&&r.place==='1')).length;
+    return `<div style="margin-bottom:28px;"><div style="font-weight:700;font-size:15px;padding:6px 2px;border-bottom:2px solid #d4e8d4;margin-bottom:10px;color:#006633;">${o.name}（${hs.length}頭）<span style="font-weight:600;font-size:12px;margin-left:12px;"><span style="color:#1565c0;">出走 ${runCount}/${hs.length}</span>　<span style="color:#b45309;">勝利 ${winCount}/${hs.length}</span></span></div><table class="horse-table"><thead><tr><th>馬名</th><th style="width:70px;text-align:right;">獲得pt</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }).join('');
 }
 function toggleActionBtns(rowId, btnId, hid){
