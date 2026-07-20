@@ -136,6 +136,23 @@ tr:last-child td{border-bottom:none;}
 .btn-edit{padding:4px 10px;border-radius:4px;border:1px solid #ccc;font-size:12px;cursor:pointer;background:#fff;color:#333;}
 .btn-edit:hover{background:#f5f5f5;}
 @keyframes trophy-fade{0%,100%{opacity:1}50%{opacity:0.1}}.trophy-blink{animation:trophy-fade 2s ease-in-out infinite;}
+
+/* ===== Column (article) ===== */
+.article{background:#fff;border-radius:8px;border:1px solid #d4e8d4;box-shadow:0 1px 4px rgba(0,102,51,0.07);overflow:hidden;margin-bottom:16px;}
+.article-head{background:linear-gradient(135deg,#006633 0%,#00804a 100%);padding:22px 20px 18px;color:#fff;}
+.article-label{display:inline-block;font-size:0.68rem;letter-spacing:0.18em;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.4);border-radius:20px;padding:3px 12px;margin-bottom:10px;}
+.article-title{font-family:'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif;font-size:1.25rem;font-weight:900;line-height:1.5;}
+.article-sub{font-size:0.82rem;color:rgba(255,255,255,0.85);margin-top:6px;line-height:1.6;}
+.article-date{font-size:0.72rem;color:rgba(255,255,255,0.7);margin-top:10px;}
+.article-body{padding:20px;line-height:1.9;font-size:0.9rem;color:#333;}
+.article-body p{margin-bottom:1em;}
+.article-h{font-family:'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif;font-size:1.02rem;font-weight:700;color:#006633;margin:1.8em 0 0.8em;padding-left:10px;border-left:4px solid #006633;line-height:1.5;}
+.article-h:first-child{margin-top:0;}
+.article-h2{font-size:0.92rem;font-weight:700;color:#333;margin:1.4em 0 0.6em;padding-bottom:4px;border-bottom:2px solid #e8f5ee;}
+.article-hl{background:linear-gradient(transparent 60%,#fff3b8 60%);font-weight:700;}
+.article-box{background:#f9fdf9;border:1px solid #d4e8d4;border-radius:8px;padding:12px 14px;margin:1em 0;font-size:0.86rem;}
+.article-box li{margin-left:1.2em;margin-bottom:0.4em;}
+.article-note{font-size:0.75rem;color:#999;margin-top:1.5em;padding-top:10px;border-top:1px solid #eee;}
 </style>
 
 <!-- レース結果編集モーダル -->
@@ -274,6 +291,7 @@ tr:last-child td{border-bottom:none;}
   <button class="tab active" onclick="sw('ranking',this)">ランキング</button>
   <button class="tab" onclick="sw('horses',this)">指名馬</button>
   <button class="tab" onclick="sw('race',this)">レース結果</button>
+  <button class="tab" onclick="sw('column',this)">コラム</button>
   <button class="tab" onclick="sw('owners',this)">参加者設定</button>
   <button class="tab" onclick="sw('settings',this)">大会設定</button>
   <button class="tab" onclick="sw('datamanage',this)">データ管理</button>
@@ -397,6 +415,67 @@ tr:last-child td{border-bottom:none;}
     </div>
   </div>
   <div class="card"><div class="card-title">登録馬一覧</div><div id="horse-list"></div></div>
+</div>
+
+<div id="column" class="sec">
+  <div class="article">
+    <div class="article-head">
+      <span class="article-label">COLUMN vol.1</span>
+      <div class="article-title">【第32回マルコメ杯POG】開幕1ヶ月レビュー</div>
+      <div class="article-sub">〜各陣営の秘蔵っ子と、早くも生まれたドラマ〜</div>
+      <div class="article-date">2026.07.20</div>
+    </div>
+    <div class="article-body">
+      <p>2026年6月13日、第32回マルコメ杯POGが開幕。3陣営×15頭、計45頭の2歳馬が1年間の長い戦いに挑む。開幕から約1ヶ月、まずは各陣営のドラフト戦略と、ここまでの戦況を振り返る。</p>
+
+      <div class="article-h">各陣営の指名馬 —— 三者三様のドラフト戦略</div>
+
+      <div class="article-h2">西澤陣営 —— 「キタサンブラック全力買い」</div>
+      <p>指名15頭中4頭がキタサンブラック産駒（ソブリオ・ウィクフォード・ダイナマイク・プロテウス）という徹底ぶり。しかも母の顔ぶれが豪華だ。</p>
+      <div class="article-box"><ul>
+        <li><b>ソブリオ</b>：母はGI2勝（ヴィクトリアマイル・香港C）のノームコア。おばはグランプリ女王クロノジェネシスという超良血。</li>
+        <li><b>プロテウス</b>：母アットザシーサイドは名牝シーザリオの娘。つまりエピファネイア、サートゥルナーリアの甥にあたる。</li>
+        <li><b>リサナウト</b>：母グルヴェイグはエアグルーヴ直仔。ドゥラメンテらを輩出した日本屈指の名牝系の出身。</li>
+        <li><b>チェスティーノ</b>：母チェッキーノはオークス2着馬。父は天皇賞秋・有馬記念を制したエフフォーリア。</li>
+      </ul></div>
+
+      <div class="article-h2">髙坂陣営 —— 「名牝の仔、一本釣り」</div>
+      <p>母の実績なら3陣営随一。大物狙いのロマン派ドラフト。</p>
+      <div class="article-box"><ul>
+        <li><b>ラッキースパークル</b>：母はGI4勝の女傑ラッキーライラック。父エピファネイアで、まさに「走って当然」の配合。</li>
+        <li><b>スノーウィスパー</b>：母ブチコの娘、つまり<span class="article-hl">白毛のGI馬ソダシ、スプリンターズS勝ちのママコチャの妹</span>。話題性は45頭でNo.1か。</li>
+        <li><b>ジャンゴッド</b>：母マーゴットディドは英GIナンソープS勝ち馬。</li>
+        <li><b>ダノンダックス</b>：母ヤンキーローズは豪GI勝ち馬。矢作厩舎×2頭、福永厩舎など厩舎布陣も手堅い。</li>
+      </ul></div>
+
+      <div class="article-h2">小出陣営 —— 「新種牡馬Flightlineに賭ける」</div>
+      <p>米国で無敗のまま年度代表馬に上りつめた怪物Flightlineの産駒を<b>2頭</b>（ショウナンガレオン・オールシティキング）指名する大勝負。</p>
+      <div class="article-box"><ul>
+        <li><b>ショウナンガレオン</b>：そのFlightline産駒の1頭。後述の通り、早くもとんでもない走りを見せた。</li>
+        <li><b>エルドボルグ</b>：父キタサンブラック、母コンサートホールは欧州の大種牡馬Dubawi産駒という国際色豊かな配合。</li>
+        <li><b>ベラジオパンテーラ</b>：大阪杯馬ベラジオオペラと同じ「ベラジオ」の冠名＆上村厩舎。</li>
+      </ul></div>
+
+      <div class="article-h">開幕からの戦況</div>
+
+      <div class="article-h2">開幕週（6/13〜14）—— 西澤・インカルナータが開幕勝利</div>
+      <p>初日はアセンシオン（髙坂・5着）、ユタライト（小出・6着）と静かな立ち上がり。しかし翌14日、西澤陣営の<b>インカルナータ</b>（父エフフォーリア）が新馬戦を快勝し、第32回の初勝利を飾った。</p>
+
+      <div class="article-h2">7/5 —— ショウナンガレオン、レコードの衝撃</div>
+      <p>函館2歳新馬戦で小出陣営の<b>ショウナンガレオン</b>が勝利。それも<span class="article-hl">レコードタイム</span>のおまけ付きだ。「Flightline産駒2頭指名」という大勝負が、開幕1ヶ月で早くも回収モードに入った。レコードボーナス+5ptも獲得。</p>
+
+      <div class="article-h2">7/12 —— 西澤、まさかのワンツーフィニッシュ</div>
+      <p>福島2歳新馬戦（芝1800）で1着<b>リサナウト</b>、2着<b>ウィクフォード</b>。<span class="article-hl">どちらも西澤陣営</span>という同一レースワンツーの珍事が発生。エアグルーヴの牝系がここでも輝いた。同日の小倉では小出陣営の<b>エルドボルグ</b>も単勝1.5倍に応えて新馬勝ちし、両陣営が譲らない。</p>
+
+      <div class="article-h2">7/19 —— ステラトップガン、雪辱の初勝利</div>
+      <p>新馬戦2着に惜敗していた髙坂陣営の<b>ステラトップガン</b>が函館の未勝利戦を快勝。母ステラリードは、GI戦線を沸かせたステラヴェローチェの母。兄譲りの勝負根性で、陣営に待望の今季初白星をもたらした。</p>
+
+      <div class="article-h">まだ序章 —— 32頭のデビューを待つ</div>
+      <p>ここまで延べ15走で5勝。ただし45頭中32頭はまだデビュー前で、ソダシの妹スノーウィスパーの巻き返し、ラッキーライラックの仔ラッキースパークルの勝ち上がりなど、楽しみは山ほど残っている。夏の北海道、そして秋の2歳重賞戦線へ——マルコメ杯のドラマはまだ序章だ。</p>
+
+      <div class="article-note">※最新の順位は「ランキング」タブをご覧ください。</div>
+    </div>
+  </div>
 </div>
 
 <div id="owners" class="sec">
