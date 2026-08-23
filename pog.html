@@ -153,6 +153,14 @@ tr:last-child td{border-bottom:none;}
 .article-box{background:#f9fdf9;border:1px solid #d4e8d4;border-radius:8px;padding:12px 14px;margin:1em 0;font-size:0.86rem;}
 .article-box li{margin-left:1.2em;margin-bottom:0.4em;}
 .article-note{font-size:0.75rem;color:#999;margin-top:1.5em;padding-top:10px;border-top:1px solid #eee;}
+.article-scroll{overflow-x:auto;margin:0.9em 0;-webkit-overflow-scrolling:touch;}
+.article-table{width:100%;min-width:430px;border-collapse:collapse;font-size:0.8rem;line-height:1.6;}
+.article-table th{background:#f0f8f4;color:#006633;padding:6px 9px;font-size:0.72rem;font-weight:700;border-bottom:2px solid #d4e8d4;text-align:left;white-space:nowrap;}
+.article-table td{padding:6px 9px;border-bottom:1px solid #eee;color:#333;}
+.article-table td:first-child{white-space:nowrap;color:#888;font-size:0.75rem;}
+.article-table tr.pick td{background:#f9fdf9;}
+.article-table tr.pick td:nth-child(2){font-weight:700;color:#006633;}
+.article-caption{font-size:0.72rem;color:#999;margin-top:-0.4em;margin-bottom:1em;}
 </style>
 
 <!-- レース結果編集モーダル -->
@@ -418,6 +426,97 @@ tr:last-child td{border-bottom:none;}
 </div>
 
 <div id="column" class="sec">
+  <div class="article">
+    <div class="article-head">
+      <span class="article-label">COLUMN vol.2</span>
+      <div class="article-title">みんなキタサンブラックを見ている、<br>でも本当に強いのは？</div>
+      <div class="article-sub">〜45頭の血統傾向とJRA2歳リーディングを照らし合わせる〜</div>
+      <div class="article-date">2026.08.23</div>
+    </div>
+    <div class="article-body">
+      <p>夏の新馬戦がひと通り出そろい、ここからは秋競馬に向けて各陣営の有力馬が続々とデビューしてくる。その前に一度、マルコメ杯45頭の血統傾向と、JRA全体の2歳リーディングサイアー（8/16時点）を照らし合わせてみた。見えてきたのは、指名の"人気"と実際の"強さ"のズレだった。</p>
+
+      <div class="article-h">マルコメ杯・種牡馬指名ランキング（全45頭確定）</div>
+      <div class="article-scroll">
+        <table class="article-table">
+          <thead><tr><th>順位</th><th>種牡馬</th><th>頭数</th><th>内訳</th></tr></thead>
+          <tbody>
+            <tr class="pick"><td>1位</td><td>キタサンブラック</td><td>12頭</td><td>西澤7・高坂1・小出4</td></tr>
+            <tr class="pick"><td>2位</td><td>サートゥルナーリア</td><td>5頭</td><td>西澤1・高坂4</td></tr>
+            <tr class="pick"><td>3位</td><td>エピファネイア</td><td>4頭</td><td>西澤1・高坂2・小出1</td></tr>
+            <tr class="pick"><td>4位タイ</td><td>エフフォーリア</td><td>3頭</td><td>西澤2・高坂1</td></tr>
+            <tr class="pick"><td>4位タイ</td><td>キズナ</td><td>3頭</td><td>西澤1・小出2</td></tr>
+            <tr class="pick"><td>6位タイ</td><td>コントレイル／ロードカナロア／Flightline／レイデオロ／モーリス</td><td>各2頭</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="article-caption">以下、リオンディーズ・マカヒキ・イスラボニータ・ニューイヤーズデイ・ジャンダルム・モズアスコット・Frankel・Baaeedが各1頭。</div>
+      <p>見ての通り、<span class="article-hl">45頭中12頭（約27%）がキタサンブラック産駒</span>。実に4頭に1頭以上がこの1頭の子だ。</p>
+
+      <div class="article-h">JRA全体・2歳リーディングサイアー（8/16時点）</div>
+      <div class="article-scroll">
+        <table class="article-table">
+          <thead><tr><th>順位</th><th>種牡馬</th><th>勝率</th><th>AEI</th></tr></thead>
+          <tbody>
+            <tr class="pick"><td>1位</td><td>エフフォーリア★</td><td>30.0%</td><td>1.81</td></tr>
+            <tr><td>2位</td><td>シスキン</td><td>46.7%</td><td>2.91</td></tr>
+            <tr><td>3位</td><td>タワーオブロンドン</td><td>10.5%</td><td>2.04</td></tr>
+            <tr><td>4位</td><td>サリオス</td><td>15.0%</td><td>1.63</td></tr>
+            <tr class="pick"><td>5位</td><td>エピファネイア★</td><td>25.0%</td><td>1.52</td></tr>
+            <tr class="pick"><td>6位</td><td>サートゥルナーリア★</td><td>23.8%</td><td>1.42</td></tr>
+            <tr><td>7位</td><td>シルバーステート</td><td>33.3%</td><td>1.95</td></tr>
+            <tr class="pick"><td>8位</td><td>キタサンブラック★</td><td>21.7%</td><td>1.22</td></tr>
+            <tr><td>9位</td><td>ビッグアーサー</td><td>28.6%</td><td>1.85</td></tr>
+            <tr class="pick"><td>10位</td><td>コントレイル★</td><td>15.8%</td><td>1.36</td></tr>
+            <tr class="pick"><td>11位</td><td>キズナ★</td><td>30.8%</td><td>1.52</td></tr>
+            <tr class="pick"><td>12位</td><td>モーリス★</td><td>18.8%</td><td>1.17</td></tr>
+            <tr><td>13位</td><td>アドマイヤマーズ</td><td>15.8%</td><td>0.98</td></tr>
+            <tr><td>14位</td><td>ルヴァンスレーヴ</td><td>30.0%</td><td>1.53</td></tr>
+            <tr class="pick"><td>14位</td><td>モズアスコット★</td><td>37.5%</td><td>1.91</td></tr>
+            <tr class="pick"><td>16位</td><td>ジャンダルム★</td><td>6.7%</td><td>0.92</td></tr>
+            <tr><td>17位</td><td>カラヴァッジオ</td><td>25.0%</td><td>1.71</td></tr>
+            <tr><td>18位</td><td>フィレンツェファイア</td><td>16.7%</td><td>1.12</td></tr>
+            <tr><td>19位</td><td>Too Darn Hot</td><td>50.0%</td><td>6.51</td></tr>
+            <tr><td>20位</td><td>サトノダイヤモンド</td><td>25.0%</td><td>3.25</td></tr>
+            <tr class="pick"><td>21位</td><td>イスラボニータ★</td><td>12.5%</td><td>0.80</td></tr>
+            <tr><td>22位</td><td>ダノンスマッシュ</td><td>6.7%</td><td>0.82</td></tr>
+            <tr><td>23位</td><td>インディチャンプ</td><td>12.5%</td><td>0.76</td></tr>
+            <tr><td>24位</td><td>サトノクラウン</td><td>18.2%</td><td>1.01</td></tr>
+            <tr class="pick"><td>25位</td><td>ニューイヤーズデイ★</td><td>7.7%</td><td>0.85</td></tr>
+            <tr class="pick"><td>26位</td><td>Flightline★</td><td>50.0%</td><td>2.71</td></tr>
+            <tr class="pick"><td>27位</td><td>ロードカナロア★</td><td>20.0%</td><td>1.08</td></tr>
+            <tr><td>28位</td><td>リアルスティール</td><td>14.3%</td><td>1.47</td></tr>
+            <tr class="pick"><td>29位</td><td>リオンディーズ★</td><td>33.3%</td><td>1.59</td></tr>
+            <tr class="pick"><td>30位</td><td>レイデオロ★</td><td>6.3%</td><td>0.59</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="article-caption">★＝マルコメ杯で指名されている種牡馬（30位圏外のマカヒキ・Frankel・Baaeedは表に含まれないため未マーク）</div>
+      <div class="article-box">
+        <b>AEI（Average-Earning Index）とは</b><br>
+        その種牡馬の産駒が「平均的な馬」に比べてどれだけ稼いでいるかを示す指数。1.00が同世代平均で、数値が高いほど効率よく賞金を稼いでいることを意味する。出走頭数が少なくても効率が良ければ数値は上がるので、勝率と合わせて見ると「頭数の割に強い（弱い）種牡馬」が分かりやすい。
+      </div>
+
+      <div class="article-h">ここが面白いところ</div>
+      <p>マルコメ杯で圧倒的1位のキタサンブラックは、JRA全体では8位・勝率21.7%。決して悪くはないが、"みんなが選ぶほど飛び抜けている"わけではない。むしろ数字上の1位はエフフォーリア、効率（AEI）でいえば2位シスキンが頭ひとつ抜けている。</p>
+      <p>そのシスキン、<span class="article-hl">マルコメ杯には1頭も指名なし</span>。エフフォーリアも3頭だけ（西澤2・高坂1）と、実績上位種牡馬への集中度は意外と低い。</p>
+      <p>一方で、<span class="article-hl">Flightline産駒（小出のオールシティキング・ショウナンガレオン）は勝率50%・AEI2.71</span>という高効率株。この2頭を引き当てた小出陣営は、地味に"良い所を掴んでいる"と言えそうだ。</p>
+
+      <div class="article-h">陣営別の個性</div>
+      <div class="article-h2">西澤陣営</div>
+      <p>15頭中7頭がキタサンブラック。良くも悪くも一点集中型。この1種牡馬の当たり外れが、そのままシーズンの明暗を左右しそうな組み方。</p>
+      <div class="article-h2">高坂陣営</div>
+      <p>サートゥルナーリア4頭・コントレイル2頭・エピファネイア2頭と比較的分散。JRA16位ジャンダルムや14位モズアスコットなど、いわゆる"堅実株ではない"種牡馬も混ざっており、伸びしろと博打の両方を抱える構成。</p>
+      <div class="article-h2">小出陣営</div>
+      <p>キタサンブラック4頭に加え、ロードカナロア・キズナ・Flightlineと輸入/個性派血統が目立つ。Flightlineの効率の良さが光る、意外と"通好み"な指名。</p>
+
+      <div class="article-h">締め</div>
+      <p>現時点の血統トレンドと、実際の指名傾向にはそれなりのズレがある。このズレがシーズン終盤にどう出るか——中間ランキングとあわせて、引き続き追っていきたい。</p>
+
+      <div class="article-note">データ：マルコメ杯POGサイト登録データ（45頭確定）／サラブレッド血統センター 中央2歳リーディングサイアー（2026年8月16日時点）</div>
+    </div>
+  </div>
+
   <div class="article">
     <div class="article-head">
       <span class="article-label">COLUMN vol.1</span>
