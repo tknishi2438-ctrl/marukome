@@ -313,24 +313,43 @@
     <div class="card">
         <h2>🐴 馬名プリセット管理</h2>
 
-        <!-- Paste import -->
+        <!-- ① URLから取り込み -->
         <p class="text-muted" style="font-size:0.78rem; margin-bottom:6px;">
-            ① 出馬表ページを全選択コピー（Cmd+A → Cmd+C）　② 下に貼り付けて「抽出」
+            netkeibaの出馬表ページのURLを貼り付けて「取り込み」を押すだけです。
         </p>
-        <textarea id="horseImportText" rows="4"
-            style="width:100%; box-sizing:border-box; background:#1a2744; color:#e8eaf6;
-                   border:1px solid #3a4a7a; border-radius:8px; padding:8px; font-size:0.82rem;
-                   resize:vertical;"
-            placeholder="ここにページのテキストを貼り付け..."></textarea>
-        <div style="display:flex; gap:8px; margin-top:6px;">
-            <button class="btn btn-primary btn-full" onclick="importHorsesFromText()">抽出</button>
-            <button class="btn btn-secondary" onclick="clearPastePanel()">クリア</button>
+        <div style="display:flex; gap:6px; align-items:flex-start;">
+            <input type="text" id="horseImportUrl"
+                   placeholder="https://race.netkeiba.com/race/shutuba.html?race_id=..."
+                   style="flex:1; min-width:0; margin-bottom:0;"
+                   onkeydown="if(event.key==='Enter') importHorsesFromUrl()" />
+            <button class="btn btn-primary" id="urlImportBtn" style="white-space:nowrap;"
+                    onclick="importHorsesFromUrl()">取り込み</button>
         </div>
-        <div id="pasteImportStatus" style="font-size:0.78rem; margin-top:6px;"></div>
+        <div id="urlImportStatus" style="font-size:0.78rem; margin-top:6px;"></div>
 
-        <!-- 確認UI -->
+        <!-- ② テキスト貼り付け（予備） -->
+        <details id="pasteFallback" style="margin-top:12px;">
+            <summary style="font-size:0.78rem; color:#666; cursor:pointer;">
+                うまく取り込めないとき：ページのテキストを貼り付ける
+            </summary>
+            <p class="text-muted" style="font-size:0.76rem; margin:6px 0;">
+                出馬表ページを全選択コピー（Cmd+A → Cmd+C）して、下に貼り付けて「抽出」。
+            </p>
+            <textarea id="horseImportText" rows="4"
+                style="width:100%; box-sizing:border-box; background:#fff; color:#222;
+                       border:1px solid #ccc; border-radius:6px; padding:8px; font-size:0.82rem;
+                       resize:vertical; font-family:inherit;"
+                placeholder="ここにページのテキストを貼り付け..."></textarea>
+            <div style="display:flex; gap:8px; margin-top:6px;">
+                <button class="btn btn-primary btn-full" onclick="importHorsesFromText()">抽出</button>
+                <button class="btn btn-secondary" onclick="clearPastePanel()">クリア</button>
+            </div>
+            <div id="pasteImportStatus" style="font-size:0.78rem; margin-top:6px;"></div>
+        </details>
+
+        <!-- 確認UI（URL／貼り付け共通） -->
         <div id="horseConfirmPanel" style="display:none; margin-top:8px;">
-            <p style="font-size:0.78rem; color:#aac; margin-bottom:6px;">
+            <p style="font-size:0.78rem; color:#666; margin-bottom:6px;">
                 不要なものをタップして除外 → 「確定」で登録
             </p>
             <div style="display:flex; gap:6px; margin-bottom:6px;">
@@ -967,29 +986,95 @@ function saveHorses() {
 // 確認パネル用の選択状態
 let horseCandidates = []; // { name, selected }
 
+/**
+ * 馬名の抽出（URL取込・貼り付け取込で共通）
+ * 出馬表は「馬名のすぐ後ろに性齢（牡2・牝3・せん4）が来る」構造なので、
+ * そこを手がかりにすると馬名以外（メニュー名・レース名など）を拾わずに済む。
+ */
+function extractHorseNames(raw) {
+    // マークダウンのリンク／画像記法 [名前](URL) を名前だけに畳む
+    const text = String(raw || '').replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1');
+
+    // 馬名 →（馬体重）→ 性齢 の並びを拾う
+    const re = /([ァ-ヶー]{2,12})[\s|]*(?:[\d.]+\s?kg(?:\([^)]*\))?)?[\s|]*(?:牡|牝|せん|セン|騸|セ)[ ]?\d/g;
+    const names = [...new Set([...text.matchAll(re)].map(m => m[1]))];
+    if (names.length) return names;
+
+    // 見つからないときは従来方式（カタカナ語を出現頻度順）にフォールバック
+    const freq = {};
+    (text.match(/[ァ-ヶーｦ-ﾟ]{3,16}/g) || []).forEach(m => { freq[m] = (freq[m] || 0) + 1; });
+    return Object.keys(freq).sort((a, b) => freq[b] - freq[a]);
+}
+
+/** 候補を確認パネルに表示する */
+function showHorseCandidates(names) {
+    horseCandidates = names.map(name => ({ name, selected: true }));
+    renderCandidateTags();
+    document.getElementById('horseConfirmPanel').style.display = '';
+}
+
+// 出馬表ページはそのままでは読み込めないため、テキスト化サービスを経由する
+const HORSE_IMPORT_PROXY = 'https://r.jina.ai/';
+
+/** URLを貼り付けて出走馬を取り込む */
+async function importHorsesFromUrl() {
+    const input    = document.getElementById('horseImportUrl');
+    const statusEl = document.getElementById('urlImportStatus');
+    const btn      = document.getElementById('urlImportBtn');
+    const url      = input.value.trim();
+
+    if (!url) return;
+    if (!/^https?:\/\//.test(url)) {
+        statusEl.innerHTML = '<span style="color:#c0392b">⚠️ https:// から始まるURLを貼り付けてください</span>';
+        return;
+    }
+
+    const label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '取得中…';
+    statusEl.innerHTML = '<span style="color:#666">出馬表を読み込んでいます（10秒ほどかかることがあります）…</span>';
+
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30000);
+    try {
+        const res = await fetch(HORSE_IMPORT_PROXY + url, { signal: ctrl.signal });
+        if (!res.ok) throw new Error('ページを取得できませんでした');
+        const text = await res.text();
+
+        if (/メンテナンス|Service Unavailable|returned error 5\d\d/.test(text)) {
+            throw new Error('相手のサイトが一時的に開けない状態です');
+        }
+        const names = extractHorseNames(text);
+        if (names.length === 0) throw new Error('馬名が見つかりませんでした');
+
+        showHorseCandidates(names);
+        statusEl.innerHTML = `<span style="color:#27ae60">✅ ${names.length}頭を検出しました。下で確認して「確定」を押してください。</span>`;
+    } catch (e) {
+        const msg = (e && e.name === 'AbortError') ? '時間がかかりすぎました' : (e.message || String(e));
+        statusEl.innerHTML =
+            `<span style="color:#c0392b">⚠️ 取り込めませんでした（${escH(msg)}）<br>`
+          + `下の「ページのテキストを貼り付ける」からお試しください。</span>`;
+        document.getElementById('pasteFallback').open = true;
+    } finally {
+        clearTimeout(timer);
+        btn.disabled = false;
+        btn.textContent = label;
+    }
+}
+
 function importHorsesFromText() {
     const text     = document.getElementById('horseImportText').value;
     const statusEl = document.getElementById('pasteImportStatus');
     if (!text.trim()) return;
 
-    // カタカナ3〜16文字を抽出し、出現回数をカウント
-    const kata = /[ァ-ヶーｦ-ﾟ]{3,16}/g;
-    const matches = text.match(kata) || [];
-    const freq = {};
-    matches.forEach(m => { freq[m] = (freq[m] || 0) + 1; });
-
-    // 重複除去（出現頻度降順でソート）
-    const unique = Object.keys(freq).sort((a, b) => freq[b] - freq[a]);
-
-    if (unique.length === 0) {
-        statusEl.innerHTML = '<span style="color:#e74c3c">⚠️ カタカナ文字列が見つかりませんでした</span>';
+    const names = extractHorseNames(text);
+    if (names.length === 0) {
+        statusEl.innerHTML = '<span style="color:#c0392b">⚠️ 馬名が見つかりませんでした</span>';
         return;
     }
 
-    horseCandidates = unique.map(name => ({ name, selected: true }));
-    statusEl.innerHTML = `<span style="color:#aac">${unique.length}件を検出。不要なものをタップして除外してください。</span>`;
-    renderCandidateTags();
-    document.getElementById('horseConfirmPanel').style.display = '';
+    showHorseCandidates(names);
+    statusEl.innerHTML = `<span style="color:#666">${names.length}件を検出。不要なものをタップして除外してください。</span>`;
 }
 
 function renderCandidateTags() {
@@ -1019,7 +1104,10 @@ function confirmHorseImport() {
     renderPresetList();
     renderHorseSelectors();
     document.getElementById('horseImportText').value = '';
-    document.getElementById('pasteImportStatus').innerHTML = `<span style="color:#27ae60">✅ ${chosen.length}頭を登録しました</span>`;
+    document.getElementById('horseImportUrl').value  = '';
+    document.getElementById('pasteImportStatus').innerHTML = '';
+    document.getElementById('urlImportStatus').innerHTML =
+        `<span style="color:#27ae60">✅ ${chosen.length}頭を登録しました</span>`;
     document.getElementById('horseConfirmPanel').style.display = 'none';
     horseCandidates = [];
 }
