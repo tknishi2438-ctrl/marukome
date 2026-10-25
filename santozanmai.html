@@ -315,11 +315,13 @@
 
         <!-- ① URLから取り込み -->
         <p class="text-muted" style="font-size:0.78rem; margin-bottom:6px;">
-            netkeibaの出馬表ページのURLを貼り付けて「取り込み」を押すだけです。
+            netkeibaの<b>レース結果</b>ページのURLを貼り付けて「取り込み」を押すと、
+            レース名・出走頭数・全馬の着順まで自動で取り込みます。<br>
+            <span style="font-size:0.74rem;">（レース前は出馬表ページのURLでも可。その場合は馬名のみ）</span>
         </p>
         <div style="display:flex; gap:6px; align-items:flex-start;">
             <input type="text" id="horseImportUrl"
-                   placeholder="https://race.netkeiba.com/race/shutuba.html?race_id=..."
+                   placeholder="https://race.netkeiba.com/race/result.html?race_id=..."
                    style="flex:1; min-width:0; margin-bottom:0;"
                    onkeydown="if(event.key==='Enter') importHorsesFromUrl()" />
             <button class="btn btn-primary" id="urlImportBtn" style="white-space:nowrap;"
@@ -410,7 +412,7 @@
     <div class="card">
         <h2>🎯 着順入力</h2>
         <p class="text-muted" style="margin-bottom:10px;">
-            選んだ馬の実際の着順を入力してください<br>
+            レース結果を取り込んでいれば自動で入ります。入っていなければ選んでください<br>
             <small>最下位（出走頭数と同じ着順）は −3pt</small>
         </p>
         <div id="resultsInput">
@@ -991,9 +993,22 @@ let horseCandidates = []; // { name, selected }
  * 出馬表は「馬名のすぐ後ろに性齢（牡2・牝3・せん4）が来る」構造なので、
  * そこを手がかりにすると馬名以外（メニュー名・レース名など）を拾わずに済む。
  */
+/**
+ * マークダウンを素のテキストに近づける
+ * 画像を消してから、入れ子になったリンク記法を内側から順にほどく。
+ * （netkeibaの出馬表は馬名セルが [馬名![Image](...)](...) のように入れ子になっている）
+ */
+function normalizeMarkdown(raw) {
+    let t = String(raw || '');
+    t = t.replace(/!\[[^\]]*\]\([^)]*\)/g, '');            // 画像を除去
+    for (let i = 0; i < 3; i++) {                          // 入れ子リンクをほどく
+        t = t.replace(/\[([^\[\]]*)\]\([^)]*\)/g, '$1');
+    }
+    return t;
+}
+
 function extractHorseNames(raw) {
-    // マークダウンのリンク／画像記法 [名前](URL) を名前だけに畳む
-    const text = String(raw || '').replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1');
+    const text = normalizeMarkdown(raw);
 
     // 馬名 →（馬体重）→ 性齢 の並びを拾う
     const re = /([ァ-ヶー]{2,12})[\s|]*(?:[\d.]+\s?kg(?:\([^)]*\))?)?[\s|]*(?:牡|牝|せん|セン|騸|セ)[ ]?\d/g;
@@ -1004,6 +1019,53 @@ function extractHorseNames(raw) {
     const freq = {};
     (text.match(/[ァ-ヶーｦ-ﾟ]{3,16}/g) || []).forEach(m => { freq[m] = (freq[m] || 0) + 1; });
     return Object.keys(freq).sort((a, b) => freq[b] - freq[a]);
+}
+
+// 取り込んだ着順（馬名 → 着順。98=競争除外 / 99=競争中止）
+let importedPlaces = {};
+
+/**
+ * レース結果ページの解析
+ * 「| 着順 | 枠 | 馬番 | 馬名 | 性齢 | …」という表の並びを拾う。
+ * 結果ページでなければ null を返す。
+ */
+function parseRaceResult(raw) {
+    const text = normalizeMarkdown(raw);
+
+    const rows = [];
+    const re = /^\|\s*(\d+|中止|除外|取消|失格)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|\s*(?:牡|牝|セ|せん)\s?\d+\s*\|/gm;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+        rows.push({ place: m[1], umaban: m[2], name: m[4].trim() });
+    }
+    if (rows.length < 3) return null;   // 結果ページではないとみなす
+
+    // レース名・日付（例: "Title: 秋華賞(G1) 結果・払戻 | 2026年10月18日 京都11R …"）
+    const title = (text.match(/^Title:\s*(.+)$/m) || [])[1] || '';
+    const raceName = (title.split(/\s*結果・払戻\s*\|/)[0] || '').trim();
+    const dateM = title.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+
+    // 出走頭数＝実際に出走した頭数（除外・取消を除く）
+    const starters = rows.filter(r => r.place !== '除外' && r.place !== '取消').length;
+
+    return { raceName, date: dateM ? dateM[0] : '', rows, starters };
+}
+
+/** 解析した着順をフォームに反映する */
+function applyRaceResult(res) {
+    importedPlaces = {};
+    res.rows.forEach(r => {
+        let v;
+        if (/^\d+$/.test(r.place))      v = parseInt(r.place, 10);
+        else if (r.place === '中止')     v = 99;   // −3pt
+        else                             v = 98;   // 除外・取消・失格（0pt）
+        importedPlaces[r.name] = v;
+    });
+
+    // レース名・出走頭数を自動入力
+    const nameEl = document.getElementById('raceName');
+    if (res.raceName && !nameEl.value.trim()) nameEl.value = res.raceName;
+    document.getElementById('totalHorses').value = res.starters;
 }
 
 /** 候補を確認パネルに表示する */
@@ -1044,11 +1106,28 @@ async function importHorsesFromUrl() {
         if (/メンテナンス|Service Unavailable|returned error 5\d\d/.test(text)) {
             throw new Error('相手のサイトが一時的に開けない状態です');
         }
+
+        // まずレース結果ページとして解析（着順まで取り込めるのはこちら）
+        const result = parseRaceResult(text);
+        if (result) {
+            applyRaceResult(result);
+            showHorseCandidates(result.rows.map(r => r.name));
+            const label = [result.raceName, result.date].filter(Boolean).join('　');
+            statusEl.innerHTML =
+                `<span style="color:#27ae60">✅ ${escH(label)}　${result.starters}頭立て`
+              + `<br>着順まで取り込みました。下で確認して「確定」を押してください。</span>`;
+            return;
+        }
+
+        // 結果ページでなければ出馬表として馬名のみ取り込む
         const names = extractHorseNames(text);
         if (names.length === 0) throw new Error('馬名が見つかりませんでした');
 
+        importedPlaces = {};
         showHorseCandidates(names);
-        statusEl.innerHTML = `<span style="color:#27ae60">✅ ${names.length}頭を検出しました。下で確認して「確定」を押してください。</span>`;
+        statusEl.innerHTML =
+            `<span style="color:#27ae60">✅ ${names.length}頭を検出しました（出馬表のため着順はありません）。`
+          + `下で確認して「確定」を押してください。</span>`;
     } catch (e) {
         const msg = (e && e.name === 'AbortError') ? '時間がかかりすぎました' : (e.message || String(e));
         statusEl.innerHTML =
@@ -1178,9 +1257,14 @@ function renderHorseSelectors() {
         const wrap = document.getElementById(`horses${p}`);
         wrap.innerHTML = '';
         for (let i = 1; i <= 3; i++) {
-            const options = horsePresets.map(h =>
-                `<option value="${escH(h)}">${escH(h)}</option>`
-            ).join('');
+            const options = horsePresets.map(h => {
+                const pl = importedPlaces[h];
+                const tag = pl === undefined ? ''
+                          : pl === 99 ? '[中止] '
+                          : pl === 98 ? '[除外] '
+                          : `${pl}着 `;
+                return `<option value="${escH(h)}">${tag}${escH(h)}</option>`;
+            }).join('');
 
             const row = document.createElement('div');
             row.className = 'horse-row';
@@ -1256,23 +1340,36 @@ function updateResultsInput() {
     }
 
     const totalH = parseInt(document.getElementById('totalHorses').value) || 18;
+    const autoCount = horses.filter(h => importedPlaces[h] !== undefined).length;
+
     container.innerHTML = horses.map(h => {
-        const sid = toSafeId(h);
+        const sid  = toSafeId(h);
+        const auto = importedPlaces[h];            // 取り込み済みなら着順が入る
+        const sel  = v => (auto === v ? ' selected' : '');
         const opts = Array.from({length: totalH}, (_, k) =>
-            `<option value="${k+1}">${k+1}着</option>`
+            `<option value="${k+1}"${sel(k+1)}>${k+1}着</option>`
         ).join('');
+        const badge = auto === undefined ? ''
+            : ' <span style="font-size:0.68rem;color:#006633;background:#f0f8f4;'
+              + 'border:1px solid #d4e8d4;border-radius:10px;padding:1px 6px;">自動</span>';
         return `
             <div class="result-row">
-                <div class="horse-label">${escH(h)}</div>
+                <div class="horse-label">${escH(h)}${badge}</div>
                 <select id="res_${sid}">
-                    <option value="">着順を選択</option>
+                    <option value=""${auto === undefined ? ' selected' : ''}>着順を選択</option>
                     ${opts}
-                    <option value="98">競争除外（0pt）</option>
-                    <option value="99">競争中止（−3pt）</option>
+                    <option value="98"${sel(98)}>競争除外（0pt）</option>
+                    <option value="99"${sel(99)}>競争中止（−3pt）</option>
                 </select>
             </div>
         `;
     }).join('');
+
+    if (autoCount > 0) {
+        container.insertAdjacentHTML('afterbegin',
+            `<p class="text-muted" style="font-size:0.76rem;margin-bottom:8px;">`
+          + `📥 取り込んだ結果から${autoCount}頭の着順を自動入力しました（必要なら変更できます）</p>`);
+    }
 }
 
 // ============================================================
@@ -1534,6 +1631,10 @@ function resetForm() {
     // 特別レーストグルをリセット
     const specialEl = document.getElementById('specialToggle');
     if (specialEl) specialEl.checked = false;
+    // 取り込んだ着順もクリア
+    importedPlaces = {};
+    const urlStatus = document.getElementById('urlImportStatus');
+    if (urlStatus) urlStatus.innerHTML = '';
     renderHorseSelectors();
     document.getElementById('resultDisplay').style.display = 'none';
     currentResult = null;
